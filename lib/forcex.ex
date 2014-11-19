@@ -54,8 +54,8 @@ defmodule Forcex do
     GenServer.call pid, {:describe, object}
   end
 
-  def query(pid, query) do
-    GenServer.call pid, {:query, query}
+  def query(pid, query, options \\ %{page_until_complete: false}, timeout \\ 5000) do
+    GenServer.call pid, {:query, query, options}, timeout
   end
 
   def next_query_results(pid, query_id) do
@@ -134,12 +134,19 @@ defmodule Forcex do
   end
   def handle_call({:describe, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:query, query}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:query, query, %{page_until_complete: false}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
     params = %{"q" => query} |> URI.encode_query
     results = authenticated_get(url, endpoint, "/query/?" <> params, token, token_type)
     {:reply, results, state}
   end
-  def handle_call({:query, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+  def handle_call({:query, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    params = %{"q" => query} |> URI.encode_query
+    results = authenticated_get(url, endpoint, "/query/?" <> params, token, token_type)
+    all_results = page_until_complete([], results, url, token, token_type)
+
+    {:reply, all_results, state}
+  end
+  def handle_call({:query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:next_query_results, query = <<"/services"::utf8, _::binary>>}, _from, state = %{instance_url: url, service_endpoint: _, access_token: token, token_type: token_type}) do
     results = authenticated_get(url, query, "", token, token_type)
@@ -175,6 +182,16 @@ defmodule Forcex do
     |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
     |> Map.get(:body)
     |> JSEX.decode!
+  end
+
+  defp page_until_complete(record_accumulator, results = %{"done" => true}, _, _, _) do
+    %{results | "records" => record_accumulator ++ results["records"]}
+  end
+  defp page_until_complete(record_accumulator, prev_results, url, token, token_type) do
+    next_url = prev_results["nextRecordsUrl"]
+    results = authenticated_get(url, next_url, "", token, token_type)
+    record_accumulator ++ prev_results["records"]
+    |> page_until_complete(results, url, token, token_type)
   end
 
 end
