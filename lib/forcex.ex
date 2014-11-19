@@ -58,6 +58,10 @@ defmodule Forcex do
     GenServer.call pid, {:query, query, options}, timeout
   end
 
+  def query_all(pid, query, options \\ %{page_until_complete: false}, timeout \\ 5000) do
+    GenServer.call pid, {:query_all, query, options}, timeout
+  end
+
   def next_query_results(pid, query_id) do
     GenServer.call pid, {:next_query_results, query_id}
   end
@@ -147,6 +151,20 @@ defmodule Forcex do
     {:reply, all_results, state}
   end
   def handle_call({:query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:query_all, query, %{page_until_complete: false}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    params = %{"q" => query} |> URI.encode_query
+    results = authenticated_get(url, endpoint, "/queryAll/?" <> params, token, token_type)
+    {:reply, results, state}
+  end
+  def handle_call({:query_all, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    params = %{"q" => query} |> URI.encode_query
+    results = authenticated_get(url, endpoint, "/queryAll/?" <> params, token, token_type)
+    all_results = page_until_complete([], results, url, token, token_type)
+
+    {:reply, all_results, state}
+  end
+  def handle_call({:query_all, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:next_query_results, query = <<"/services"::utf8, _::binary>>}, _from, state = %{instance_url: url, service_endpoint: _, access_token: token, token_type: token_type}) do
     results = authenticated_get(url, query, "", token, token_type)

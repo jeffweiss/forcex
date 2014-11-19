@@ -34,7 +34,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] Process Approvals
  - [ ] Process Rules
  - [x] Query
- - [ ] QueryAll
+ - [x] QueryAll
  - [ ] Quick Actions
  - [ ] Search
  - [ ] Search Scope and Order
