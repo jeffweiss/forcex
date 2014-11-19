@@ -85,18 +85,12 @@ defmodule Forcex do
   end
 
   def handle_call(:available_resources, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    resources = url <> endpoint
-      |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
-      |> Map.get(:body)
-      |> JSEX.decode!
+    resources = authenticated_get(url, endpoint, "", token, token_type)
     {:reply, resources, state}
   end
 
   def handle_call(:limits, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    limits = url <> endpoint <> "/limits"
-      |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
-      |> Map.get(:body)
-      |> JSEX.decode!
+    limits = authenticated_get(url, endpoint, "/limits", token, token_type)
     {:reply, limits, state}
   end
 
@@ -117,6 +111,13 @@ defmodule Forcex do
     |> Enum.filter( fn(x) -> Map.get(x, "version") == version end)
     |> List.first
     |> Map.get("url")
+  end
+
+  defp authenticated_get(url, version_endpoint, endpoint, token, token_type) do
+    url <> version_endpoint <> endpoint
+    |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
+    |> Map.get(:body)
+    |> JSEX.decode!
   end
 
 end
