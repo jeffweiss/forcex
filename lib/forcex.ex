@@ -96,21 +96,25 @@ defmodule Forcex do
     resources = authenticated_get(url, endpoint, "", token, token_type)
     {:reply, resources, state}
   end
+  def handle_call(:available_resources, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call(:limits, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
     limits = authenticated_get(url, endpoint, "/limits", token, token_type)
     {:reply, limits, state}
   end
+  def handle_call(:limits, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call(:available_objects, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
     objects = authenticated_get(url, endpoint, "/sobjects", token, token_type)
     {:reply, objects, state}
   end
+  def handle_call(:available_objects, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:object_metadata, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
     metadata = authenticated_get(url, endpoint, "/sobjects/" <> object, token, token_type)
     {:reply, metadata, state}
   end
+  def handle_call(:object_metadata, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   ###
   # Helper functions
