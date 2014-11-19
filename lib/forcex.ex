@@ -54,6 +54,14 @@ defmodule Forcex do
     GenServer.call pid, {:describe, object}
   end
 
+  def query(pid, query) do
+    GenServer.call pid, {:query, query}
+  end
+
+  def next_query_results(pid, query_id) do
+    GenServer.call pid, {:next_query_results, query_id}
+  end
+
   ###
   # Private API
   ###
@@ -121,10 +129,27 @@ defmodule Forcex do
   def handle_call({:metadata, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:describe, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    metadata = authenticated_get(url, endpoint, "/sobjects/" <> object <> "/describe", token, token_type)
-    {:reply, metadata, state}
+    description = authenticated_get(url, endpoint, "/sobjects/" <> object <> "/describe", token, token_type)
+    {:reply, description, state}
   end
   def handle_call({:describe, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:query, query}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    params = %{"q" => query} |> URI.encode_query
+    results = authenticated_get(url, endpoint, "/query/?" <> params, token, token_type)
+    {:reply, results, state}
+  end
+  def handle_call({:query, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:next_query_results, query = <<"/services"::utf8, _::binary>>}, _from, state = %{instance_url: url, service_endpoint: _, access_token: token, token_type: token_type}) do
+    results = authenticated_get(url, query, "", token, token_type)
+    {:reply, results, state}
+  end
+  def handle_call({:next_query_results, query}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    results = authenticated_get(url, endpoint, "/query/" <> query, token, token_type)
+    {:reply, results, state}
+  end
+  def handle_call({:next_query_results, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   ###
   # Helper functions

@@ -15,7 +15,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [x] Limits
  - [x] Describe Global
  - [x] SObject Basic Information
- - [ ] SObject Describe
+ - [x] SObject Describe
  - [ ] SObject Get Deleted
  - [ ] SObject Get Updated
  - [ ] SObject Named Layouts
@@ -33,7 +33,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] FlexiPage
  - [ ] Process Approvals
  - [ ] Process Rules
- - [ ] Query
+ - [x] Query
  - [ ] QueryAll
  - [ ] Quick Actions
  - [ ] Search
