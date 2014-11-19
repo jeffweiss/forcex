@@ -43,3 +43,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] Search Suggested Article Title Matches
  - [ ] Tabs
  - [ ] Themes
+
+License
+-------
+MIT License, see LICENSE
