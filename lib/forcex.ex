@@ -46,8 +46,12 @@ defmodule Forcex do
     GenServer.call pid, :available_objects
   end
 
-  def object_metadata(pid, object) do
-    GenServer.call pid, {:object_metadata, object}
+  def metadata(pid, object) do
+    GenServer.call pid, {:metadata, object}
+  end
+
+  def describe(pid, object) do
+    GenServer.call pid, {:describe, object}
   end
 
   ###
@@ -110,11 +114,17 @@ defmodule Forcex do
   end
   def handle_call(:available_objects, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:object_metadata, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:metadata, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
     metadata = authenticated_get(url, endpoint, "/sobjects/" <> object, token, token_type)
     {:reply, metadata, state}
   end
-  def handle_call(:object_metadata, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+  def handle_call({:metadata, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:describe, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    metadata = authenticated_get(url, endpoint, "/sobjects/" <> object <> "/describe", token, token_type)
+    {:reply, metadata, state}
+  end
+  def handle_call({:describe, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   ###
   # Helper functions
