@@ -11,8 +11,8 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] Login (Web Server OAuth)
  - [ ] Login (User-Agent OAuth)
  - [ ] OAuth Refresh Token
- - [ ] Resources by Version
- - [ ] Limits
+ - [x] Resources by Version
+ - [x] Limits
  - [ ] Describe Global
  - [ ] SObject Basic Information
  - [ ] SObject Describe

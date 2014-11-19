@@ -34,6 +34,14 @@ defmodule Forcex do
     GenServer.call pid, {:version_endpoint, version}
   end
 
+  def available_resources(pid) do
+    GenServer.call pid, :available_resources
+  end
+
+  def limits(pid) do
+    GenServer.call pid, :limits
+  end
+
   ###
   # Private API
   ###
@@ -74,6 +82,22 @@ defmodule Forcex do
 
   def handle_call({:version_endpoint, version}, _from, state) do
     {:reply, version_endpoint_on_instance(state.instance_url, version), state}
+  end
+
+  def handle_call(:available_resources, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    resources = url <> endpoint
+      |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
+      |> Map.get(:body)
+      |> JSEX.decode!
+    {:reply, resources, state}
+  end
+
+  def handle_call(:limits, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+    limits = url <> endpoint <> "/limits"
+      |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
+      |> Map.get(:body)
+      |> JSEX.decode!
+    {:reply, limits, state}
   end
 
   ###
