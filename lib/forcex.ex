@@ -1,62 +1,98 @@
 defmodule Forcex do
-  use HTTPoison.Base
+  use GenServer
 
-  def api_host do
-    System.get_env("FORCEX_API_HOST") || "na1.salesforce.com"
+  ###
+  # Public API
+  ###
+
+  def start(initial_state \\ %{}) do
+    HTTPoison.start
+    GenServer.start __MODULE__, initial_state
   end
 
-  def api_version do
-    System.get_env("FORCEX_API_VERSION") || most_recent_version
+  def init(initial_state) do
+    state = %{:instance_url  => "https://login.salesforce.com",
+              :api_version   => "32.0",
+              :username      => System.get_env("FORCEX_USERNAME"),
+              :password      => System.get_env("FORCEX_PASSWORD"),
+              :client_id     => System.get_env("FORCEX_CLIENT_ID"),
+              :client_secret => System.get_env("FORCEX_CLIENT_SECRET")
+            }
+            |> Map.merge(initial_state)
+    {:ok, state}
   end
 
-  def username do
-    System.get_env("FORCEX_USERNAME") || ""
+  def login(pid, username, password, client_id, client_secret) do
+    GenServer.call pid, {:login, username, password, client_id, client_secret}
   end
 
-  def password do
-    System.get_env("FORCEX_PASSWORD") || ""
+  def versions(pid) do
+    GenServer.call pid, :versions
   end
 
-  def client_id do
-    System.get_env("FORCEX_CLIENT_KEY") || ""
+  def version_endpoint(pid, version) do
+    GenServer.call pid, {:version_endpoint, version}
   end
 
-  def client_secret do
-    System.get_env("FORCEX_CLIENT_SECRET") || ""
+  ###
+  # Private API
+  ###
+
+  def handle_call({:login, _, _, _, _}, _from, state = %{access_token: token, token_type: _}) do
+    {:reply, token, state}
   end
 
-  def login(user \\ username, pass \\ password, clientid \\ client_id, clientsecret \\ client_secret) do
-    body = %{"grant_type" => "password",
-             "client_id" => clientid,
-             "client_secret" => clientsecret,
-             "username" => user,
-             "password" => pass}
-    |> URI.encode_query
-    |> IO.inspect
-    post!("https://login.salesforce.com/services/oauth2/token?" <> body, "")
+  def handle_call({:login, username, password, client_id, client_secret}, _from, state) do
+    params = %{"grant_type"    => "password",
+               "client_id"     => client_id,
+               "client_secret" => client_secret,
+               "username"      => username,
+               "password"      => password}
+             |> URI.encode_query
+    case HTTPoison.post(state[:instance_url] <> "/services/oauth2/token?" <> params, "") do
+      {:ok, %HTTPoison.Response{status_code: 200, body: json}} ->
+        body = json |> JSEX.decode!
+        override = %{:access_token => body["access_token"],
+          :instance_url => body["instance_url"],
+          :token_type   => body["token_type"],
+          :service_endpoint => version_endpoint_on_instance(body["instance_url"], state.api_version)}
+
+        new_state = Map.merge(state, override)
+
+        {:reply, body["access_token"], new_state}
+      {:ok, %HTTPoison.Response{status_code: 400, body: json}} ->
+        body = json |> JSEX.decode!
+        {:error, body, state}
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, reason, state}
+    end
   end
 
-  def process_response_body(body) do
-    body
+  def handle_call(:versions, _from, state) do
+    {:reply, versions_on_instance(state.instance_url), state}
+  end
+
+  def handle_call({:version_endpoint, version}, _from, state) do
+    {:reply, version_endpoint_on_instance(state.instance_url, version), state}
+  end
+
+  ###
+  # Helper functions
+  ###
+
+  defp versions_on_instance(instance_url) do
+    instance_url <> "/services/data"
+    |> HTTPoison.get!
+    |> Map.get(:body)
     |> JSEX.decode!
   end
 
-  def version_list do
-    "https://" <> api_host <> "/services/data"
-    |> get!
-    |> Map.get(:body)
-  end
-
-  def most_recent_version do
-    version_list
-    |> List.last
-    |> Map.get("version")
-  end
-
-  def service_endpoint_for_version(version) do
-    version_list
-    |> Enum.filter( fn(x) -> Map.get(x, "version") == version end )
+  defp version_endpoint_on_instance(instance, version) do
+    instance
+    |> versions_on_instance
+    |> Enum.filter( fn(x) -> Map.get(x, "version") == version end)
     |> List.first
     |> Map.get("url")
   end
+
 end
