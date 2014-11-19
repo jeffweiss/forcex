@@ -1,10 +1,17 @@
 defmodule Forcex.Mixfile do
   use Mix.Project
 
+  @description """
+    Elixir library for the Force.com / SalesForce.com REST API
+  """
+
   def project do
     [app: :forcex,
      version: "0.0.1",
      elixir: "~> 1.0",
+     name: "Forcex",
+     description: @description,
+     package: package,
      deps: deps]
   end
 
@@ -27,5 +34,11 @@ defmodule Forcex.Mixfile do
   defp deps do
     [{:httpoison, "~> 0.5"},
      {:jsex, "~> 2.0"}]
+  end
+
+  defp package do
+    [ contributors: ["Jeff Weiss"],
+      licenses: ["MIT"],
+      links: %{"Github" => "https://github.com/jeffweiss/forcex"} ]
   end
 end
