@@ -13,8 +13,8 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] OAuth Refresh Token
  - [x] Resources by Version
  - [x] Limits
- - [ ] Describe Global
- - [ ] SObject Basic Information
+ - [x] Describe Global
+ - [x] SObject Basic Information
  - [ ] SObject Describe
  - [ ] SObject Get Deleted
  - [ ] SObject Get Updated
