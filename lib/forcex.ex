@@ -109,7 +109,7 @@ defmodule Forcex do
   end
 
   def handle_call(:available_resources, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    resources = authenticated_get(url, endpoint, "", token, token_type)
+    resources = available_resources(url, endpoint, token, token_type)
     {:reply, resources, state}
   end
   def handle_call(:available_resources, _from, state), do: {:reply, {:error, :not_logged_in}, state}
@@ -193,6 +193,10 @@ defmodule Forcex do
     |> Enum.filter( fn(x) -> Map.get(x, "version") == version end)
     |> List.first
     |> Map.get("url")
+  end
+
+  defp available_resources(url, endpoint, token, token_type) do
+    authenticated_get(url, endpoint, "", token, token_type)
   end
 
   defp authenticated_get(url, version_endpoint, endpoint, token, token_type) do
