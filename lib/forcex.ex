@@ -1,5 +1,6 @@
 defmodule Forcex do
   use GenServer
+  require Logger
 
   ###
   # Public API
@@ -84,10 +85,13 @@ defmodule Forcex do
     case HTTPoison.post(state[:instance_url] <> "/services/oauth2/token?" <> params, "") do
       {:ok, %HTTPoison.Response{status_code: 200, body: json}} ->
         body = json |> JSEX.decode!
+        service_endpoint = version_endpoint_on_instance(body["instance_url"], state.api_version)
         override = %{:access_token => body["access_token"],
           :instance_url => body["instance_url"],
           :token_type   => body["token_type"],
-          :service_endpoint => version_endpoint_on_instance(body["instance_url"], state.api_version)}
+          :service_endpoint => service_endpoint,
+          :object_endpoint_hash => available_resources(body["instance_url"], service_endpoint, body["access_token"], body["token_type"])
+        }
 
         new_state = Map.merge(state, override)
 
@@ -114,52 +118,52 @@ defmodule Forcex do
   end
   def handle_call(:available_resources, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call(:limits, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    limits = authenticated_get(url, endpoint, "/limits", token, token_type)
+  def handle_call(:limits, _from, state = %{access_token: _token, token_type: _token_type}) do
+    limits = authenticated_get("limits", "", state)
     {:reply, limits, state}
   end
   def handle_call(:limits, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call(:available_objects, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    objects = authenticated_get(url, endpoint, "/sobjects", token, token_type)
+  def handle_call(:available_objects, _from, state = %{access_token: _token, token_type: _token_type}) do
+    objects = authenticated_get("sobjects", "", state)
     {:reply, objects, state}
   end
   def handle_call(:available_objects, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:metadata, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    metadata = authenticated_get(url, endpoint, "/sobjects/" <> object, token, token_type)
+  def handle_call({:metadata, object}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    metadata = authenticated_get("sobjects", object, state)
     {:reply, metadata, state}
   end
   def handle_call({:metadata, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:describe, object}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    description = authenticated_get(url, endpoint, "/sobjects/" <> object <> "/describe", token, token_type)
+  def handle_call({:describe, object}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    description = authenticated_get("sobjects", object <> "/describe", state)
     {:reply, description, state}
   end
   def handle_call({:describe, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:query, query, %{page_until_complete: false}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:query, query, %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
     params = %{"q" => query} |> URI.encode_query
-    results = authenticated_get(url, endpoint, "/query/?" <> params, token, token_type)
+    results = authenticated_get("query", "?" <> params, state)
     {:reply, results, state}
   end
-  def handle_call({:query, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:query, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
     params = %{"q" => query} |> URI.encode_query
-    results = authenticated_get(url, endpoint, "/query/?" <> params, token, token_type)
+    results = authenticated_get("query", "?" <> params, state)
     all_results = page_until_complete([], results, url, token, token_type)
 
     {:reply, all_results, state}
   end
   def handle_call({:query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:query_all, query, %{page_until_complete: false}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:query_all, query, %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
     params = %{"q" => query} |> URI.encode_query
-    results = authenticated_get(url, endpoint, "/queryAll/?" <> params, token, token_type)
+    results = authenticated_get("queryAll", "?" <> params, state)
     {:reply, results, state}
   end
-  def handle_call({:query_all, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
+  def handle_call({:query_all, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
     params = %{"q" => query} |> URI.encode_query
-    results = authenticated_get(url, endpoint, "/queryAll/?" <> params, token, token_type)
+    results = authenticated_get("queryAll", "?" <> params, state)
     all_results = page_until_complete([], results, url, token, token_type)
 
     {:reply, all_results, state}
@@ -167,11 +171,11 @@ defmodule Forcex do
   def handle_call({:query_all, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:next_query_results, query = <<"/services"::utf8, _::binary>>}, _from, state = %{instance_url: url, service_endpoint: _, access_token: token, token_type: token_type}) do
-    results = authenticated_get(url, query, "", token, token_type)
+    results = authenticated_get(url <> query, {token, token_type})
     {:reply, results, state}
   end
-  def handle_call({:next_query_results, query}, _from, state = %{instance_url: url, service_endpoint: endpoint, access_token: token, token_type: token_type}) do
-    results = authenticated_get(url, endpoint, "/query/" <> query, token, token_type)
+  def handle_call({:next_query_results, query}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    results = authenticated_get("query", query, state)
     {:reply, results, state}
   end
   def handle_call({:next_query_results, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
@@ -196,14 +200,22 @@ defmodule Forcex do
   end
 
   defp available_resources(url, endpoint, token, token_type) do
-    authenticated_get(url, endpoint, "", token, token_type)
+    authenticated_get(url <> endpoint, {token, token_type})
   end
 
-  defp authenticated_get(url, version_endpoint, endpoint, token, token_type) do
-    url <> version_endpoint <> endpoint
+  defp authenticated_get(url = <<"http"::utf8, _::binary>>, {token, token_type}) do
+    url
     |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
     |> Map.get(:body)
     |> JSEX.decode!
+  end
+  defp authenticated_get(object, params, state = %{instance_url: url, access_token: token, token_type: token_type}) do
+    endpoint = endpoint_for_object(object, state)
+    case endpoint do
+      <<"/"::utf8, _::binary>> -> url <> endpoint <> "/" <> params
+      _ -> url <> "/" <> params
+    end
+    |> authenticated_get({token, token_type})
   end
 
   defp page_until_complete(record_accumulator, results = %{"done" => true}, _, _, _) do
@@ -211,9 +223,21 @@ defmodule Forcex do
   end
   defp page_until_complete(record_accumulator, prev_results, url, token, token_type) do
     next_url = prev_results["nextRecordsUrl"]
-    results = authenticated_get(url, next_url, "", token, token_type)
+    results = authenticated_get(url <> next_url, {token, token_type})
     record_accumulator ++ prev_results["records"]
     |> page_until_complete(results, url, token, token_type)
+  end
+
+  defp endpoint_for_object(object, %{object_endpoint_hash: hash, service_endpoint: endpoint}) do
+    case Map.get(hash, object) do
+      nil -> manually_construct_endpoint(object, endpoint)
+      result -> result
+    end
+  end
+
+  defp manually_construct_endpoint(object, endpoint) do
+    Logger.debug "object hash doesn't contain: " <> object <> ". Constructing manually."
+    endpoint <> "/" <> object
   end
 
 end
