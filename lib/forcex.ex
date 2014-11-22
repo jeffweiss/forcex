@@ -67,6 +67,10 @@ defmodule Forcex do
     GenServer.call pid, {:next_query_results, query_id}
   end
 
+  def explain_query(pid, query) do
+    GenServer.call pid, {:explain_query, query}
+  end
+
   ###
   # Private API
   ###
@@ -142,13 +146,15 @@ defmodule Forcex do
   end
   def handle_call({:describe, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:query, query, %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
+  def handle_call({:query, query, opts = %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
     params = %{"q" => query} |> URI.encode_query
+    if Map.get(opts, :warn_on_table_scan, false) == true, do: warn_on_table_scan({:query, query}, state)
     results = authenticated_get("query", "?" <> params, state)
     {:reply, results, state}
   end
-  def handle_call({:query, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
+  def handle_call({:query, query, opts = %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
     params = %{"q" => query} |> URI.encode_query
+    if Map.get(opts, :warn_on_table_scan, false) == true, do: warn_on_table_scan({:query, query}, state)
     results = authenticated_get("query", "?" <> params, state)
     all_results = page_until_complete([], results, url, token, token_type)
 
@@ -156,13 +162,16 @@ defmodule Forcex do
   end
   def handle_call({:query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
-  def handle_call({:query_all, query, %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
+  def handle_call({:query_all, query, opts = %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
     params = %{"q" => query} |> URI.encode_query
+    if Map.get(opts, :warn_on_table_scan, false) == true, do: warn_on_table_scan({:queryAll, query}, state)
+    if opts.warn_on_table_scan == true, do: warn_on_table_scan({:queryAll, query}, state)
     results = authenticated_get("queryAll", "?" <> params, state)
     {:reply, results, state}
   end
-  def handle_call({:query_all, query, %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
+  def handle_call({:query_all, query, opts = %{page_until_complete: true}}, _from, state = %{instance_url: url, access_token: token, token_type: token_type}) do
     params = %{"q" => query} |> URI.encode_query
+    if Map.get(opts, :warn_on_table_scan, false) == true, do: warn_on_table_scan({:queryAll, query}, state)
     results = authenticated_get("queryAll", "?" <> params, state)
     all_results = page_until_complete([], results, url, token, token_type)
 
@@ -179,6 +188,13 @@ defmodule Forcex do
     {:reply, results, state}
   end
   def handle_call({:next_query_results, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:explain_query, query}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    params = %{"explain" => query} |> URI.encode_query
+    results = authenticated_get("query", "?" <> params, state)
+    {:reply, results, state}
+  end
+  def handle_call({:explain_query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   ###
   # Helper functions
@@ -238,6 +254,18 @@ defmodule Forcex do
   defp manually_construct_endpoint(object, endpoint) do
     Logger.debug "object hash doesn't contain: " <> object <> ". Constructing manually."
     endpoint <> "/" <> object
+  end
+
+  defp warn_on_table_scan({queryType, query}, state) do
+    params = %{"explain" => query} |> URI.encode_query
+    planType = queryType
+      |> Atom.to_string
+      |> authenticated_get("?" <> params, state)
+      |> Map.get("plans")
+      |> List.first
+      |> Map.get("leadingOperationType")
+    if planType == "TableScan", do: Logger.warn("Query will result in table scan: " <> query)
+    query
   end
 
 end
