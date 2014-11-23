@@ -24,7 +24,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] SObject ApprovalLayouts
  - [ ] SObject CompactLayouts
  - [ ] SObject Layouts
- - [ ] SObject Blob Retrieve
+ - [x] SObject Blob Retrieve
  - [ ] SObject Quick Actions
  - [ ] SObject Suggested Articles for Case
  - [ ] SObject User Password

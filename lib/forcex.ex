@@ -71,6 +71,10 @@ defmodule Forcex do
     GenServer.call pid, {:explain_query, query}
   end
 
+  def read_binary_field(pid, sobject, id, field) do
+    GenServer.call pid, {:read_binary_field, sobject, id, field}
+  end
+
   ###
   # Private API
   ###
@@ -196,6 +200,11 @@ defmodule Forcex do
   end
   def handle_call({:explain_query, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
+  def handle_call({:read_binary_field, sobject, id, field}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    results = authenticated_get("sobjects", sobject <> "/" <> id <> "/" <> field, state)
+    {:reply, results, state}
+  end
+  def handle_call({:read_binary_field, _, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
   ###
   # Helper functions
   ###
@@ -222,8 +231,8 @@ defmodule Forcex do
   defp authenticated_get(url = <<"http"::utf8, _::binary>>, {token, token_type}) do
     url
     |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
-    |> Map.get(:body)
-    |> JSEX.decode!
+    |> IO.inspect
+    |> parse_payload
   end
   defp authenticated_get(object, params, state = %{instance_url: url, access_token: token, token_type: token_type}) do
     endpoint = endpoint_for_object(object, state)
@@ -233,6 +242,12 @@ defmodule Forcex do
     end
     |> authenticated_get({token, token_type})
   end
+
+  defp parse_payload(%{body: body, headers: %{"Content-Type" => <<"application/json"::utf8, _::binary>>}}) do
+    body
+    |> JSEX.decode!
+  end
+  defp parse_payload(%{body: body}), do: body
 
   defp page_until_complete(record_accumulator, results = %{"done" => true}, _, _, _) do
     %{results | "records" => record_accumulator ++ results["records"]}
