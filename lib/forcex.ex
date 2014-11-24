@@ -75,6 +75,10 @@ defmodule Forcex do
     GenServer.call pid, {:read_binary_field, sobject, id, field}
   end
 
+  def read_object(pid, sobject, id) do
+    GenServer.call pid, {:read_object, sobject, id}
+  end
+
   ###
   # Private API
   ###
@@ -205,6 +209,13 @@ defmodule Forcex do
     {:reply, results, state}
   end
   def handle_call({:read_binary_field, _, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:read_object, sobject, id}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    results = authenticated_get("sobjects", sobject <> "/" <> id, state)
+    {:reply, results, state}
+  end
+  def handle_call({:read_object, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
   ###
   # Helper functions
   ###
