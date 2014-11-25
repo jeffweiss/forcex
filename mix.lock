@@ -2,4 +2,5 @@
   "httpoison": {:hex, :httpoison, "0.5.0"},
   "idna": {:hex, :idna, "1.0.1"},
   "jsex": {:hex, :jsex, "2.0.0"},
-  "jsx": {:hex, :jsx, "2.1.1"}}
+  "jsx": {:hex, :jsx, "2.1.1"},
+  "timex": {:hex, :timex, "0.13.1"}}

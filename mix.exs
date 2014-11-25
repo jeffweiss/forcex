@@ -7,7 +7,7 @@ defmodule Forcex.Mixfile do
 
   def project do
     [app: :forcex,
-     version: "0.0.5",
+     version: "0.0.6",
      elixir: "~> 1.0",
      name: "Forcex",
      description: @description,
@@ -33,7 +33,9 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [{:httpoison, "~> 0.5"},
-     {:jsex, "~> 2.0"}]
+     {:jsex, "~> 2.0"},
+     {:timex, "~> 0.13.1"}
+    ]
   end
 
   defp package do

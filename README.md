@@ -17,7 +17,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [x] SObject Basic Information
  - [x] SObject Describe
  - [ ] SObject Get Deleted
- - [ ] SObject Get Updated
+ - [x] SObject Get Updated
  - [ ] SObject Named Layouts
  - [x] SObject Rows
  - [ ] SObject Rows by External ID

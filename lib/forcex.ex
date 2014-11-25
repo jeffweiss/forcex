@@ -79,6 +79,10 @@ defmodule Forcex do
     GenServer.call pid, {:read_object, sobject, id}
   end
 
+  def updated_object_ids_between(pid, sobject, startdate, enddate) do
+    GenServer.call pid, {:updated_between, sobject, startdate, enddate}
+  end
+
   ###
   # Private API
   ###
@@ -216,6 +220,15 @@ defmodule Forcex do
   end
   def handle_call({:read_object, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
+  def handle_call({:updated_between, sobject, startdate, enddate}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    params = %{:start => startdate |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}"),
+               :end   => enddate   |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}") }
+             |> URI.encode_query
+    results = authenticated_get("sobjects", sobject <> "/updated/?" <> params, state)
+    {:reply, results, state}
+  end
+  def handle_call({:updated_between, _, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
   ###
   # Helper functions
   ###
@@ -242,7 +255,6 @@ defmodule Forcex do
   defp authenticated_get(url = <<"http"::utf8, _::binary>>, {token, token_type}) do
     url
     |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
-    |> IO.inspect
     |> parse_payload
   end
   defp authenticated_get(object, params, state = %{instance_url: url, access_token: token, token_type: token_type}) do
