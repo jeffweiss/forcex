@@ -16,7 +16,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [x] Describe Global
  - [x] SObject Basic Information
  - [x] SObject Describe
- - [ ] SObject Get Deleted
+ - [x] SObject Get Deleted
  - [x] SObject Get Updated
  - [ ] SObject Named Layouts
  - [x] SObject Rows

@@ -83,6 +83,10 @@ defmodule Forcex do
     GenServer.call pid, {:updated_between, sobject, startdate, enddate}
   end
 
+  def deleted_object_ids_between(pid, sobject, startdate, enddate) do
+    GenServer.call pid, {:deleted_between, sobject, startdate, enddate}
+  end
+
   ###
   # Private API
   ###
@@ -221,13 +225,16 @@ defmodule Forcex do
   def handle_call({:read_object, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:updated_between, sobject, startdate, enddate}, _from, state = %{access_token: _token, token_type: _token_type}) do
-    params = %{:start => startdate |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}"),
-               :end   => enddate   |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}") }
-             |> URI.encode_query
-    results = authenticated_get("sobjects", sobject <> "/updated/?" <> params, state)
+    results = objects_in_range("updated", sobject, startdate, enddate, state)
     {:reply, results, state}
   end
   def handle_call({:updated_between, _, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:deleted_between, sobject, startdate, enddate}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    results = objects_in_range("deleted", sobject, startdate, enddate, state)
+    {:reply, results, state}
+  end
+  def handle_call({:deleted_between, _, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   ###
   # Helper functions
@@ -304,6 +311,13 @@ defmodule Forcex do
       |> Map.get("leadingOperationType")
     if planType == "TableScan", do: Logger.warn("Query will result in table scan: " <> query)
     query
+  end
+
+  def objects_in_range(type, sobject, startdate, enddate, state) do
+    params = %{:start => startdate |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}"),
+               :end   => enddate   |> Timex.Date.from |> Timex.DateFormat.format!("{ISO}") }
+             |> URI.encode_query
+    authenticated_get("sobjects", sobject <> "/#{type}/?" <> params, state)
   end
 
 end
