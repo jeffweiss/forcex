@@ -20,7 +20,7 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [x] SObject Get Updated
  - [ ] SObject Named Layouts
  - [x] SObject Rows
- - [ ] SObject Rows by External ID
+ - [x] SObject Rows by External ID
  - [ ] SObject ApprovalLayouts
  - [ ] SObject CompactLayouts
  - [ ] SObject Layouts

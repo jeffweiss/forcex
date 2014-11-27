@@ -79,6 +79,10 @@ defmodule Forcex do
     GenServer.call pid, {:read_object, sobject, id}
   end
 
+  def read_objects_by_field_value(pid, sobject, field, value) do
+    GenServer.call pid, {:read_objects_by_field_value, sobject, field, value}
+  end
+
   def updated_object_ids_between(pid, sobject, startdate, enddate) do
     GenServer.call pid, {:updated_between, sobject, startdate, enddate}
   end
@@ -223,6 +227,12 @@ defmodule Forcex do
     {:reply, results, state}
   end
   def handle_call({:read_object, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
+
+  def handle_call({:read_objects_by_field_value, sobject, field, value}, _from, state = %{access_token: _token, token_type: _token_type}) do
+    results = authenticated_get("sobjects", sobject <> "/#{field}/#{URI.encode(value)}", state)
+    {:reply, results, state}
+  end
+  def handle_call({:read_objects_by_field_value, _, _}, _from, state), do: {:reply, {:error, :not_logged_in}, state}
 
   def handle_call({:updated_between, sobject, startdate, enddate}, _from, state = %{access_token: _token, token_type: _token_type}) do
     results = objects_in_range("updated", sobject, startdate, enddate, state)
