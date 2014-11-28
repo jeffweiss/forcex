@@ -2,6 +2,17 @@ Forcex
 ======
 Elixir library for interacting with the Force.com REST API.
 
+Usage
+-----
+
+Add Forcex to you dependency list
+```elixir
+  defp deps do
+    [ {:forcex, "~> 0.0.8"}
+    ]
+  end
+```
+
 Current State
 -------------
 See https://www.salesforce.com/us/developer/docs/api_rest/
