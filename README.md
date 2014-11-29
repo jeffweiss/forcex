@@ -13,6 +13,17 @@ Add Forcex to you dependency list
   end
 ```
 
+Currently, Forcex only allows for Username/Password/Client Key/Client Secret
+logins. This returns a bearer token, which is also stored in the state of the
+Forcex process. In addition, after login, Forcex will interrogate the Force.com
+API to determine which instance we should use and what the base endpoint URIs
+are for various capabilities and versions.
+```elixir
+{:ok, pid} = Forcex.start
+Forcex.login(pid, "user@example.com", "passwordTOKEN", "ClientKey", "ClientSecret")
+Forcex.query(pid, "select Id, Email from Lead where Name = 'Joe Schmoe'")
+```
+
 Current State
 -------------
 See https://www.salesforce.com/us/developer/docs/api_rest/
