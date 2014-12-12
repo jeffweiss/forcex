@@ -108,7 +108,7 @@ defmodule Forcex do
              |> URI.encode_query
     case HTTPoison.post(state[:instance_url] <> "/services/oauth2/token?" <> params, "") do
       {:ok, %HTTPoison.Response{status_code: 200, body: json}} ->
-        body = json |> JSEX.decode!
+        body = json |> JSX.decode!
         service_endpoint = version_endpoint_on_instance(body["instance_url"], state.api_version)
         override = %{:access_token => body["access_token"],
           :instance_url => body["instance_url"],
@@ -121,7 +121,7 @@ defmodule Forcex do
 
         {:reply, body["access_token"], new_state}
       {:ok, %HTTPoison.Response{status_code: 400, body: json}} ->
-        body = json |> JSEX.decode!
+        body = json |> JSX.decode!
         {:error, body, state}
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, reason, state}
@@ -254,7 +254,7 @@ defmodule Forcex do
     instance_url <> "/services/data"
     |> HTTPoison.get!
     |> Map.get(:body)
-    |> JSEX.decode!
+    |> JSX.decode!
   end
 
   defp version_endpoint_on_instance(instance, version) do
@@ -285,7 +285,7 @@ defmodule Forcex do
 
   defp parse_payload(%{body: body, headers: %{"Content-Type" => <<"application/json"::utf8, _::binary>>}}) do
     body
-    |> JSEX.decode!
+    |> JSX.decode!
   end
   defp parse_payload(%{body: body}), do: body
 
