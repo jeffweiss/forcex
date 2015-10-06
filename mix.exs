@@ -7,7 +7,7 @@ defmodule Forcex.Mixfile do
 
   def project do
     [app: :forcex,
-     version: "0.0.9",
+     version: "0.0.10",
      elixir: "~> 1.0",
      name: "Forcex",
      description: @description,
@@ -34,7 +34,7 @@ defmodule Forcex.Mixfile do
   defp deps do
     [{:httpoison, "~> 0.5"},
      {:exjsx, "~> 3.1"},
-     {:timex, "~> 0.13.1"}
+     {:timex, "~> 0.13"}
     ]
   end
 
