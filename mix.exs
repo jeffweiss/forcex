@@ -2,7 +2,7 @@ defmodule Forcex.Mixfile do
   use Mix.Project
 
   @description """
-    Elixir library for the Force.com / SalesForce.com REST API
+    Elixir library for the Force.com / SalesForce / SFDC REST API
   """
 
   def project do
