@@ -8,7 +8,7 @@ Usage
 Add Forcex to you dependency list
 ```elixir
   defp deps do
-    [ {:forcex, "~> 0.0.8"}
+    [ {:forcex, "~> 0.2"}
     ]
   end
 ```
