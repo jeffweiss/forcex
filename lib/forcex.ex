@@ -13,7 +13,7 @@ defmodule Forcex do
 
   def init(initial_state) do
     state = %{:instance_url  => "https://login.salesforce.com",
-              :api_version   => "32.0",
+              :api_version   => "36.0",
               :username      => System.get_env("FORCEX_USERNAME"),
               :password      => System.get_env("FORCEX_PASSWORD"),
               :client_id     => System.get_env("FORCEX_CLIENT_ID"),
