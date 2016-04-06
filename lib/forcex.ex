@@ -25,7 +25,21 @@ defmodule Forcex do
 
   def post(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, [], [])
+    json_request(:post, url, body, authorization_header(client), [])
+  end
+
+  def get(path, body \\ "", client) do
+    url = client.endpoint <> path
+    json_request(:get, url, body, authorization_header(client), [])
+  end
+
+  def versions(%Forcex.Client{} = client) do
+    get("/services/data", client)
+  end
+
+  defp authorization_header(%{access_token: nil}), do: []
+  defp authorization_header(%{access_token: token, token_type: type}) do
+    [{"Authorization", type <> " " <> token}]
   end
 
   ###
