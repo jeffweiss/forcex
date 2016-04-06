@@ -6,13 +6,24 @@ defmodule Forcex.Mixfile do
   """
 
   def project do
-    [app: :forcex,
-     version: "0.2.0",
-     elixir: "~> 1.0",
-     name: "Forcex",
-     description: @description,
-     package: package,
-     deps: deps]
+    [
+      app: :forcex,
+      version: "0.2.0",
+      elixir: "~> 1.0",
+      name: "Forcex",
+      description: @description,
+      package: package,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        "coveralls": :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "coveralls.post": :test,
+        "docs": :docs,
+        "hex.docs": :docs,
+      ],
+      deps: deps,
+   ]
   end
 
   # Configuration for the OTP application
@@ -32,9 +43,13 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:httpoison, "~> 0.5"},
-     {:exjsx, "~> 3.1"},
-     {:timex, "~> 1.0"}
+    [
+      {:httpoison, "~> 0.5"},
+      {:exjsx, "~> 3.1"},
+      {:timex, "~> 2.0"},
+      {:excoveralls, "~> 0.5", only: :test},
+      {:ex_doc, "~> 0.11.4", only: :docs},
+      {:earmark, "~> 0.2", only: :docs},
     ]
   end
 
