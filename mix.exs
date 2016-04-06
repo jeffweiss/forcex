@@ -30,7 +30,7 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison]]
+    [applications: [:logger, :httpoison, :zlib]]
   end
 
   # Dependencies can be Hex packages:
