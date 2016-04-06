@@ -7,7 +7,6 @@ defmodule Forcex do
   ###
 
   def start(initial_state \\ %{}) do
-    HTTPoison.start
     GenServer.start __MODULE__, initial_state
   end
 
@@ -271,7 +270,7 @@ defmodule Forcex do
 
   defp authenticated_get(url = <<"http"::utf8, _::binary>>, {token, token_type}) do
     url
-    |> HTTPoison.get!(%{"Authorization" => (token_type <> " " <> token)})
+    |> HTTPoison.get!([{"Authorization", (token_type <> " " <> token)}])
     |> parse_payload
   end
   defp authenticated_get(object, params, state = %{instance_url: url, access_token: token, token_type: token_type}) do
@@ -283,7 +282,7 @@ defmodule Forcex do
     |> authenticated_get({token, token_type})
   end
 
-  defp parse_payload(%{body: body, headers: %{"Content-Type" => <<"application/json"::utf8, _::binary>>}}) do
+  defp parse_payload(%{body: body, headers: _headers}) do
     body
     |> JSX.decode!
   end
