@@ -1,5 +1,5 @@
 defmodule Forcex.Client do
-  defstruct access_token: nil, token_type: nil, endpoint: "https://login.salesforce.com"
+  defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com"
 
   def login do
     c = config
