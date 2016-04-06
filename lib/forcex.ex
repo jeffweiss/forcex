@@ -1,6 +1,32 @@
 defmodule Forcex do
   use GenServer
+  use HTTPoison.Base
   require Logger
+
+  @user_agent [{"User-agent", "forcex"}]
+
+  def process_request_headers(headers), do: headers ++ @user_agent
+
+  def process_response_body(""), do: nil
+  def process_response_body(body), do: JSX.decode!(body)
+
+  def process_headers(headers), do: Map.new(headers)
+
+  def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
+  def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
+
+  def json_request(method, url, body, headers, options) do
+    raw_request(method, url, JSX.encode!(body), headers, options)
+  end
+
+  def raw_request(method, url, body, headers, options) do
+    request!(method, url, body, headers, options) |> process_response
+  end
+
+  def post(path, body \\ "", client) do
+    url = client.endpoint <> path
+    json_request(:post, url, body, [], [])
+  end
 
   ###
   # Public API

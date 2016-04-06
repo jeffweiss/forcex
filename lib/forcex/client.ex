@@ -1,16 +1,24 @@
 defmodule Forcex.Client do
-  defstruct auth: nil, endpoint: "https://login.salesforce.com"
+  defstruct access_token: nil, token_type: nil, endpoint: "https://login.salesforce.com"
 
-  def new do
-    [:username, :password, :security_token, :client_key, :client_secret]
+  def login do
+    c = config
+    login_payload =
+      c
+      |> Map.put(:password, "#{c.password}#{c.security_token}")
+      |> Map.put(:grant_type, "password")
+    Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", %__MODULE__{})
+    |> handle_login_response
+  end
+
+  defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
+    %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
+  end
+
+  defp config do
+    [:username, :password, :security_token, :client_id, :client_secret]
     |> Enum.map(&( {&1, get_val_from_env(&1)}))
     |> Enum.into(%{})
-    |> new
-  end
-  def new(auth), do: %__MODULE__{auth: auth}
-  def new(auth, endpoint) do
-    endpoint = if String.ends_with?("/"), do: endpoint, else: endpoint <> "/"
-    %__MODULE__{auth: auth, endpoint: endpoint}
   end
 
   defp get_val_from_env(key) do
