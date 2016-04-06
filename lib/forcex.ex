@@ -184,7 +184,6 @@ defmodule Forcex do
   def handle_call({:query_all, query, opts = %{page_until_complete: false}}, _from, state = %{access_token: _token, token_type: _token_type}) do
     params = %{"q" => query} |> URI.encode_query
     if Map.get(opts, :warn_on_table_scan, false) == true, do: warn_on_table_scan({:queryAll, query}, state)
-    if opts.warn_on_table_scan == true, do: warn_on_table_scan({:queryAll, query}, state)
     results = authenticated_get("queryAll", "?" <> params, state)
     {:reply, results, state}
   end
