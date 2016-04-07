@@ -17,15 +17,39 @@ Add Forcex to you dependency list
   end
 ```
 
-Currently, Forcex only allows for Username/Password/Client Key/Client Secret
-logins. This returns a bearer token, which is also stored in the state of the
-Forcex process. In addition, after login, Forcex will interrogate the Force.com
-API to determine which instance we should use and what the base endpoint URIs
-are for various capabilities and versions.
+The `Forcex.Client` is configured to read login information either from
+application configuration:
+
 ```elixir
-{:ok, pid} = Forcex.start
-Forcex.login(pid, "user@example.com", "passwordTOKEN", "ClientKey", "ClientSecret")
-Forcex.query(pid, "select Id, Email from Lead where Name = 'Joe Schmoe'")
+
+config :forcex, Forcex.Client,
+  username: "user@example.com",
+  password: "my_super_secret_password",
+  security_token: "EMAILED_FROM_SALESFORCE",
+  client_id: "CONNECTED_APP_OAUTH_CLIENT_ID",
+  client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET"
+```
+
+or these environment variables:
+
+* `SALESFORCE_USERNAME`
+* `SALESFORCE_PASSWORD`
+* `SALESFORCE_SECURITY_TOKEN`
+* `SALESFORCE_CLIENT_ID`
+* `SALESFORCE_CLIENT_SECRET`
+
+For steps on how to create a Connected App with OAuth keys and secrets,
+please see the [Force.com REST API section on Connected Apps](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_defining_remote_access_applications.htm).
+
+Currently, to be fully functional, the `Forcex.Client` must both `login` and
+`locate_services`.
+
+```elixir
+client = Forcex.Client.login |> Forcex.Client.locate_services
+
+Forcex.versions(client)
+
+Forcex.limits(client)
 ```
 
 Current State

@@ -37,6 +37,20 @@ defmodule Forcex do
     get("/services/data", client)
   end
 
+  def services(%Forcex.Client{} = client) do
+    get("/services/data/v#{client.api_version}", client)
+  end
+
+  def limits(%Forcex.Client{} = client) do
+    client
+    |> service_endpoint("limits")
+    |> get(client)
+  end
+
+  defp service_endpoint(%Forcex.Client{services: services}, service) do
+    Map.get(services, service)
+  end
+
   defp authorization_header(%{access_token: nil}), do: []
   defp authorization_header(%{access_token: token, token_type: type}) do
     [{"Authorization", type <> " " <> token}]

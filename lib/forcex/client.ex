@@ -1,5 +1,5 @@
 defmodule Forcex.Client do
-  defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com"
+  defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com", services: %{}
 
   def login do
     c = config
@@ -9,6 +9,11 @@ defmodule Forcex.Client do
       |> Map.put(:grant_type, "password")
     Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", %__MODULE__{})
     |> handle_login_response
+  end
+
+  def locate_services(client) do
+    services = Forcex.services(client)
+    %{client | services: services}
   end
 
   defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
