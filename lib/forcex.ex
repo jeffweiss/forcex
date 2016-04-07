@@ -4,14 +4,16 @@ defmodule Forcex do
   require Logger
 
   @user_agent [{"User-agent", "forcex"}]
+  @accept [{"Accept", "application/json"}]
+  @accept_encoding [{"Accept-Encoding", "gzip"}]
 
-  def process_request_headers(headers), do: headers ++ @user_agent
-
-  def process_response_body(""), do: nil
-  def process_response_body(body), do: JSX.decode!(body)
+  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
   def process_headers(headers), do: Map.new(headers)
 
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip", "Content-Type" => "application/json" <> _}, status_code: 200}), do: body |> :zlib.gunzip |> JSX.decode!
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _}, status_code: 200}), do: body |> JSX.decode!
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"}, status_code: 200}), do: body |> :zlib.gunzip
   def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
@@ -41,9 +43,27 @@ defmodule Forcex do
     get("/services/data/v#{client.api_version}", client)
   end
 
-  def limits(%Forcex.Client{} = client) do
-    client
-    |> service_endpoint("limits")
+  @basic_services [
+    limits: "limits",
+    describe_global: "sobjects",
+    quick_actions: "quickActions",
+    recently_viewed_items: "recent",
+    tabs: "tabs",
+    theme: "theme",
+  ]
+
+  for {function, service} <- @basic_services do
+    def unquote(function)(%Forcex.Client{} = client) do
+      client
+      |> service_endpoint(unquote(service))
+      |> get(client)
+    end
+  end
+
+  def describe_sobject(sobject, %Forcex.Client{} = client) do
+    base = service_endpoint(client, "sobjects")
+
+    "#{base}/#{sobject}/describe/"
     |> get(client)
   end
 
