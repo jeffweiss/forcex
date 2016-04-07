@@ -64,6 +64,46 @@ defmodule Forcex do
     end
   end
 
+  def generate_sobject_modules(%Forcex.Client{} = client) do
+    sobject_maps =
+      client
+      |> describe_global
+      |> Map.get("sobjects")
+    for sobject <- sobject_maps do
+      name = Map.get(sobject, "name")
+      urls = Map.get(sobject, "urls")
+      describe_url = Map.get(urls, "describe")
+      sobject_url = Map.get(urls, "sobject")
+      row_template_url = Map.get(urls, "rowTemplate")
+
+      quote bind_quoted: [
+        name: name, 
+        describe_url: describe_url,
+        sobject_url: sobject_url,
+        row_template_url: row_template_url,
+      ], location: :keep do
+        defmodule Module.concat(Forcex.SObject, name) do
+          def describe(%Forcex.Client{} = client) do
+            unquote(describe_url)
+            |> Forcex.get(client)
+          end
+
+          def basic_info(%Forcex.Client{} = client) do
+            unquote(sobject_url)
+            |> Forcex.get(client)
+          end
+
+          def get(id, %Forcex.Client{} = client) do
+            unquote(row_template_url)
+            |> String.replace("{ID}", id)
+            |> Forcex.get(client)
+          end
+        end
+      end
+      |> Code.compile_quoted
+    end
+  end
+
   def describe_sobject(sobject, %Forcex.Client{} = client) do
     base = service_endpoint(client, "sobjects")
 
