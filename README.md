@@ -44,12 +44,14 @@ please see the [Force.com REST API section on Connected Apps](https://developer.
 Currently, to be fully functional, the `Forcex.Client` must both `login` and
 `locate_services`.
 
+Pagination of results is entirely manual at the moment.
+
 ```elixir
 client = Forcex.Client.login |> Forcex.Client.locate_services
 
-Forcex.versions(client)
+first_page = Forcex.query("select Id, Name from Account order by CreatedDate desc", client)
 
-Forcex.limits(client)
+second_page = first_page |> Map.get("nextRecordsUrl") |> Forcex.get(client)
 ```
 
 Current State

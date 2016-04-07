@@ -67,6 +67,22 @@ defmodule Forcex do
     |> get(client)
   end
 
+  def query(query, %Forcex.Client{} = client) do
+    base = service_endpoint(client, "query")
+    params = %{"q" => query} |> URI.encode_query
+
+    "#{base}/?#{params}"
+    |> get(client)
+  end
+
+  def query_all(query, %Forcex.Client{} = client) do
+    base = service_endpoint(client, "queryAll")
+    params = %{"q" => query} |> URI.encode_query
+
+    "#{base}/?#{params}"
+    |> get(client)
+  end
+
   defp service_endpoint(%Forcex.Client{services: services}, service) do
     Map.get(services, service)
   end
