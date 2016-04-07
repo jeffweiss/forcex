@@ -17,12 +17,16 @@ defmodule Forcex do
   def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
+  defp extra_options do
+    Application.get_env(:forcex, :request_options, [])
+  end
+
   def json_request(method, url, body, headers, options) do
     raw_request(method, url, JSX.encode!(body), headers, options)
   end
 
   def raw_request(method, url, body, headers, options) do
-    request!(method, url, body, headers, options) |> process_response
+    request!(method, url, body, headers, extra_options ++ options) |> process_response
   end
 
   def post(path, body \\ "", client) do
