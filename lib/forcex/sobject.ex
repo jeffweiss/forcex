@@ -1,9 +1,18 @@
 defmodule Forcex.SObject do
   Application.ensure_all_started(:httpoison)
 
-  @sobjects Forcex.Client.login |> Forcex.Client.locate_services |> Forcex.describe_global |> Map.get("sobjects")
+  @client Forcex.Client.login
+  sobjects =
+    @client
+    |> case do
+      %{access_token: nil} -> []
+      _ ->  @client
+            |> Forcex.locate_services
+            |> Forcex.describe_global
+            |> Map.get("sobjects")
+    end
 
-  for sobject <- @sobjects do
+  for sobject <- sobjects do
     name = Map.get(sobject, "name")
     urls = Map.get(sobject, "urls")
     describe_url = Map.get(urls, "describe")

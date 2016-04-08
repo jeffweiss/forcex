@@ -22,7 +22,7 @@ defmodule Forcex.Client do
     %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
   end
   defp handle_login_response({status_code, error_message}) do
-    Logger.error "Cannot log into SFDC API. Got error code #{status_code} and message #{inspect error_message}"
+    Logger.warn "Cannot log into SFDC API. Please ensure you have Forcex properly configured. Got error code #{status_code} and message #{inspect error_message}"
     %__MODULE__{}
   end
 
