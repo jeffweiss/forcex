@@ -55,6 +55,14 @@ or these environment variables:
 * `SALESFORCE_CLIENT_ID`
 * `SALESFORCE_CLIENT_SECRET`
 
+HTTPoison request-specific options may also be configured:
+
+```elixir
+config :forcex, :request_options,
+  timeout: 20000,
+  recv_timeout: :infinity
+```
+
 For steps on how to create a Connected App with OAuth keys and secrets,
 please see the [Force.com REST API section on Connected Apps](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_defining_remote_access_applications.htm).
 
