@@ -11,9 +11,14 @@ defmodule Forcex do
 
   def process_headers(headers), do: Map.new(headers)
 
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip", "Content-Type" => "application/json" <> _}, status_code: 200}), do: body |> :zlib.gunzip |> JSX.decode!
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _}, status_code: 200}), do: body |> JSX.decode!
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"}, status_code: 200}), do: body |> :zlib.gunzip
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
+    %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
+    |> process_response
+  end
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
+    %{resp | body: JSX.decode!(body), headers: Map.drop(headers, ["Content-Type"])}
+    |> process_response
+  end
   def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
