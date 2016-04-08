@@ -1,6 +1,8 @@
 defmodule Forcex.Client do
   defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com", services: %{}
 
+  require Logger
+
   def login do
     c = config
     login_payload =
@@ -18,6 +20,10 @@ defmodule Forcex.Client do
 
   defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
     %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
+  end
+  defp handle_login_response({status_code, error_message}) do
+    Logger.error "Cannot log into SFDC API. Got error code #{status_code} and message #{inspect error_message}"
+    %__MODULE__{}
   end
 
   defp config do
