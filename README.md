@@ -1,21 +1,38 @@
-Forcex
-======
+# Forcex
+
 [![Build Status](https://travis-ci.org/jeffweiss/forcex.svg?branch=master)](https://travis-ci.org/jeffweiss/forcex)
 [![Hex.pm Version](http://img.shields.io/hexpm/v/forcex.svg?style=flat)](https://hex.pm/packages/forcex)
 [![Coverage Status](https://coveralls.io/repos/github/jeffweiss/forcex/badge.svg?branch=master)](https://coveralls.io/github/jeffweiss/forcex?branch=master)
 
 Elixir library for interacting with the Force.com REST API.
 
-Usage
------
+## Usage
 
-Add Forcex to you dependency list
+Add Forcex to your dependency list
 ```elixir
   defp deps do
-    [ {:forcex, "~> 0.2"}
+    [ {:forcex, "~> 0.3"}
     ]
   end
 ```
+
+At compile time Forcex will query the Force.com REST API and generate modules for all the
+SObjects you have configured and permission to see.
+
+If you see a warning like
+```elixir
+23:37:02.057 [warn]  Cannot log into SFDC API. Please ensure you have Forcex properly configured.
+Got error code 400 and message %{"error" => "invalid_client_id", "error_description" => "client identifier invalid"}
+```
+
+You will need to configure Forcex, as noted below, and then explicitly recompile Forcex
+
+```shell
+$ mix deps.clean forcex
+$ mix deps.compile forcex
+```
+
+## Configuration
 
 The `Forcex.Client` is configured to read login information either from
 application configuration:
@@ -54,8 +71,8 @@ first_page = Forcex.query("select Id, Name from Account order by CreatedDate des
 second_page = first_page |> Map.get("nextRecordsUrl") |> Forcex.get(client)
 ```
 
-Current State
--------------
+## Current State
+
 See https://www.salesforce.com/us/developer/docs/api_rest/
 
  - [x] List API versions available
@@ -87,15 +104,15 @@ See https://www.salesforce.com/us/developer/docs/api_rest/
  - [ ] Process Rules
  - [x] Query
  - [x] QueryAll
- - [ ] Quick Actions
+ - [x] Quick Actions
  - [ ] Search
  - [ ] Search Scope and Order
  - [ ] Search Result Layouts
- - [ ] Recently Viewed Items
+ - [x] Recently Viewed Items
  - [ ] Search Suggested Article Title Matches
- - [ ] Tabs
- - [ ] Themes
+ - [x] Tabs
+ - [x] Themes
 
-License
--------
+# License
+
 MIT License, see LICENSE
