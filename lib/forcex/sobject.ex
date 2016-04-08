@@ -7,7 +7,7 @@ defmodule Forcex.SObject do
     |> case do
       %{access_token: nil} -> []
       _ ->  @client
-            |> Forcex.locate_services
+            |> Forcex.Client.locate_services
             |> Forcex.describe_global
             |> Map.get("sobjects")
     end
