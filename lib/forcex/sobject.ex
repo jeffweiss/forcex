@@ -1,13 +1,35 @@
+defmodule Forcex.SObjectDocHelper do
+  def docs_for_field(%{"name" => name, "type" => type, "label" => label, "picklistValues" => values}) when type in ["picklist", "multipicklist"] do
+    """
+    * `#{name}` - `#{type}`, #{label}
+    #{for value <- values, do: docs_for_picklist_values(value)}
+    """
+  end
+  def docs_for_field(%{"name" => name, "type" => type, "label" => label}) do
+    "* `#{name}` - `#{type}`, #{label}\n"
+  end
+
+  defp docs_for_picklist_values(%{"value" => value, "active" => true}) do
+"     * `#{value}`\n"
+  end
+  defp docs_for_picklist_values(_), do: ""
+
+end
 defmodule Forcex.SObject do
   Application.ensure_all_started(:httpoison)
 
   @client Forcex.Client.login
+  client_with_services =
+    @client
+    |> case do
+      %{access_token: nil} -> @client
+      _ -> Forcex.Client.locate_services(@client)
+    end
   sobjects =
     @client
     |> case do
       %{access_token: nil} -> []
-      _ ->  @client
-            |> Forcex.Client.locate_services
+      _ ->  client_with_services
             |> Forcex.describe_global
             |> Map.get("sobjects")
     end
@@ -18,10 +40,15 @@ defmodule Forcex.SObject do
     describe_url = Map.get(urls, "describe")
     sobject_url = Map.get(urls, "sobject")
     row_template_url = Map.get(urls, "rowTemplate")
+    full_description = Forcex.describe_sobject(name, client_with_services)
 
     defmodule Module.concat(Forcex.SObject, name) do
       @moduledoc """
-      Dynamically generated module for `#{name}`
+      Dynamically generated module for `#{Map.get(full_description, "label")}`
+
+      ## Fields
+      #{for field <- Map.get(full_description, "fields"), do: Forcex.SObjectDocHelper.docs_for_field(field)}
+
       """
 
       @doc """
@@ -172,5 +199,7 @@ defmodule Forcex.SObject do
         |> Forcex.get(client)
       end
     end
+
+    IO.puts "Generated #{Module.concat(Forcex.SObject, name)}"
   end
 end
