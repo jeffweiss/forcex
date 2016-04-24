@@ -5,7 +5,7 @@ defmodule Forcex do
 
   @user_agent [{"User-agent", "forcex"}]
   @accept [{"Accept", "application/json"}]
-  @accept_encoding [{"Accept-Encoding", "gzip"}]
+  @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
   def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
@@ -13,6 +13,15 @@ defmodule Forcex do
 
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
     %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
+    |> process_response
+  end
+  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "deflate"} = headers } = resp) do
+    zstream = :zlib.open
+    :ok = :zlib.inflateInit(zstream, -15)
+    uncompressed_data = :zlib.inflate(zstream, body) |> Enum.join
+    :zlib.inflateEnd(zstream)
+    :zlib.close(zstream)
+    %{resp | body: uncompressed_data, headers: Map.drop(headers, ["Content-Encoding"])}
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
