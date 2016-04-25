@@ -32,6 +32,18 @@ $ mix deps.clean forcex
 $ mix deps.compile forcex
 ```
 
+You can have Forcex generate modules at compile time using the accompanying Mix task.
+
+```shell
+$ mix compile.forcex
+```
+
+This can also be invoked automatically by adding Forcex to your project's compilers in `mix.exs`
+
+```elixir
+compilers: [:forcex] ++ Mix.compilers,
+```
+
 ## Configuration
 
 The `Forcex.Client` is configured to read login information either from
