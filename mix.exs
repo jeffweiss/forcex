@@ -8,11 +8,12 @@ defmodule Forcex.Mixfile do
   def project do
     [
       app: :forcex,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.0",
       name: "Forcex",
       description: @description,
       package: package,
+      # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         "coveralls": :test,

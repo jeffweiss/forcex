@@ -3,8 +3,48 @@ defmodule Forcex.Client do
 
   require Logger
 
-  def login do
-    c = config
+  @doc """
+  Initially signs into Force.com API.
+
+  Login credentials may be supplied. Order for locating credentials:
+  1. Map supplied to `login/1`
+  2. Environment variables
+  3. Applications configuration
+
+  Supplying a Map of login credentials must be in the form of
+
+      %{
+        username: "...",
+        password: "...",
+        security_token: "...",
+        client_id: "...",
+        client_secret: "..."
+      }
+
+  Environment variables
+    - `SALESFORCE_USERNAME`
+    - `SALESFORCE_PASSWORD`
+    - `SALESFORCE_SECURITY_TOKEN`
+    - `SALESFORCE_CLIENT_ID`
+    - `SALESFORCE_CLIENT_SECRET`
+
+  Application configuration
+
+      config :forcex, Forcex.Client,
+        username: "user@example.com",
+        password: "my_super_secret_password",
+        security_token: "EMAILED_FROM_SALESFORCE",
+        client_id: "CONNECTED_APP_OAUTH_CLIENT_ID",
+        client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET"
+
+  Will require additional call to `locate_services/1` to identify which Force.com
+  services are availabe for your deployment.
+
+      client =
+        Forcex.Client.login
+        |> Forcex.Client.locate_services
+  """
+  def login(c \\ config) do
     login_payload =
       c
       |> Map.put(:password, "#{c.password}#{c.security_token}")
