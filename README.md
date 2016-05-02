@@ -11,7 +11,7 @@ Elixir library for interacting with the Force.com REST API.
 Add Forcex to your dependency list
 ```elixir
   defp deps do
-    [ {:forcex, "~> 0.3"}
+    [ {:forcex, "~> 0.4"}
     ]
   end
 ```
