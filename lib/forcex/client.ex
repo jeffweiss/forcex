@@ -44,12 +44,16 @@ defmodule Forcex.Client do
         Forcex.Client.login
         |> Forcex.Client.locate_services
   """
-  def login(c \\ config) do
+  def login(c \\ default_config) do
+    login(c, %__MODULE__{})
+  end
+
+  def login(conf, starting_struct) do
     login_payload =
-      c
-      |> Map.put(:password, "#{c.password}#{c.security_token}")
+      conf
+      |> Map.put(:password, "#{conf.password}#{conf.security_token}")
       |> Map.put(:grant_type, "password")
-    Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", %__MODULE__{})
+    Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", starting_struct)
     |> handle_login_response
   end
 
@@ -66,7 +70,7 @@ defmodule Forcex.Client do
     %__MODULE__{}
   end
 
-  defp config do
+  def default_config do
     [:username, :password, :security_token, :client_id, :client_secret]
     |> Enum.map(&( {&1, get_val_from_env(&1)}))
     |> Enum.into(%{})

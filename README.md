@@ -91,6 +91,20 @@ first_page = Forcex.query("select Id, Name from Account order by CreatedDate des
 second_page = first_page |> Map.get("nextRecordsUrl") |> Forcex.get(client)
 ```
 
+## Further Configuration
+
+Forcex allows additional configuration of API endpoint and API version via the
+`%Forcex.Client{}` struct. You may also use this mechanism if you have a
+`grant_type` other than password.
+
+This example shows how to use both an older API version and the SalesForce
+sandbox API.
+```elixir
+Forcex.Client.default_config
+|> Forcex.Client.login(%Forcex.Client{endpoint: "https://test.salesforce.com", api_version: "34.0"})
+```
+
+
 ## Current State
 
 See https://www.salesforce.com/us/developer/docs/api_rest/

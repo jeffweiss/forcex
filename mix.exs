@@ -8,7 +8,7 @@ defmodule Forcex.Mixfile do
   def project do
     [
       app: :forcex,
-      version: "0.4.0",
+      version: "0.4.1",
       elixir: "~> 1.0",
       name: "Forcex",
       description: @description,
