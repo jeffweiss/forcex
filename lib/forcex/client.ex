@@ -61,6 +61,20 @@ defmodule Forcex.Client do
     services = Forcex.services(client)
     %{client | services: services}
   end
+  
+  def create_sobject(client \\ %__MODULE__{}, name \\ "SOBject", map \\ %{})
+
+  def create_sobject(client, name, map) when is_atom(name) do
+    name = name 
+    |> Atom.to_string
+    |> String.capitalize
+
+    client
+    |> create_sobject(name, map)
+  end
+  def create_sobject(client, name, map) do
+    Forcex.post("/services/data/v20.0/sobjects/#{name}", map, client)
+  end
 
   defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
     %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
