@@ -49,17 +49,32 @@ defmodule Forcex.Client do
   end
 
   def login(conf, starting_struct) do
-    login_payload =
-      conf
-      |> Map.put(:password, "#{conf.password}#{conf.security_token}")
-      |> Map.put(:grant_type, "password")
+    login_payload = conf 
+    |> Map.merge(%{
+      password:   "#{conf.password}#{conf.security_token}",
+      grant_type: "password"
+    })
+
     Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", starting_struct)
     |> handle_login_response
   end
 
   def locate_services(client) do
-    services = Forcex.services(client)
-    %{client | services: services}
+    %{client | services: Forcex.services(client)}
+  end
+  
+  def create_sobject(client \\ %__MODULE__{}, name \\ "SOBject", map \\ %{})
+
+  def create_sobject(client, name, map) when is_atom(name) do
+    name = name 
+    |> Atom.to_string
+    |> String.capitalize
+
+    client
+    |> create_sobject(name, map)
+  end
+  def create_sobject(client, name, map) do
+    Forcex.post("/services/data/v20.0/sobjects/#{name}", map, client)
   end
 
   defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
