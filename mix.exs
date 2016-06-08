@@ -23,6 +23,17 @@ defmodule Forcex.Mixfile do
         "docs": :docs,
         "hex.docs": :docs,
       ],
+      dialyzer: [
+        plt_add_apps: [:httpoison, :erlsom, :exjsx, :ssl],
+        flags: [
+          # "-Wunmatched_returns",
+          # "-Wrace_conditions",
+          # "-Wunderspecs",
+          # "-Wunknown",
+          # "-Woverspecs",
+          # "-Wspecdiffs",
+        ]
+      ],
       deps: deps,
    ]
   end
@@ -31,7 +42,7 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :erlsom, :poison, :ssl]]
+    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl]]
   end
 
   # Dependencies can be Hex packages:
@@ -49,10 +60,10 @@ defmodule Forcex.Mixfile do
       {:exjsx, "~> 3.1"},
       {:timex, "~> 2.0"},
       {:erlsom, "~> 1.4"},
-      {:poison, "~> 2.1"},
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11.4", only: :docs},
       {:earmark, "~> 0.2", only: :docs},
+      {:dialyxir, "~> 0.3", only: :dev},
     ]
   end
 

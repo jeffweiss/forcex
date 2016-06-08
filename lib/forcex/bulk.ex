@@ -81,23 +81,32 @@ defmodule Forcex.Bulk do
     raw_request(:post, url, soql, authorization_header(client), [])
   end
 
+  @spec fetch_batch_status(batch, map) :: batch
   def fetch_batch_status(batch, client) when is_map(batch) do
     fetch_batch_status(batch["id"], batch["jobId"], client)
+  end
+  @spec fetch_batch_status(id, job | id, map) :: batch
+  def fetch_batch_status(id, job, client) when is_binary(id) and is_map(job) do
+    fetch_batch_status(id, job["id"], client)
   end
   def fetch_batch_status(id, job_id, client) when is_binary(id) and is_binary(job_id) do
     get("/job/#{job_id}/batch/#{id}", client)
   end
 
+  @spec fetch_batch_result_status(batch, map) :: list(String.t)
   def fetch_batch_result_status(batch, client) when is_map(batch) do
     fetch_batch_result_status(batch["id"], batch["jobId"], client)
   end
+  @spec fetch_batch_result_status(id, id, map) :: list(String.t)
   def fetch_batch_result_status(batch_id, job_id, client)  when is_binary(batch_id) and is_binary(job_id) do
     get("/job/#{job_id}/batch/#{batch_id}/result", client)
   end
 
+  @spec fetch_results(id, batch, map) :: list(map)
   def fetch_results(id, batch, client) when is_binary(id) and is_map(batch) do
     fetch_results(id, batch["id"], batch["jobId"], client)
   end
+  @spec fetch_results(id, id, id, map) :: list(map)
   def fetch_results(id, batch_id, job_id, client) when is_binary(id) and is_binary(batch_id) and is_binary(job_id) do
     get("/job/#{job_id}/batch/#{batch_id}/result/#{id}", client)
   end
