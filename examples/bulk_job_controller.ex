@@ -1,4 +1,4 @@
-defmodule Forcex.Bulk.JobController do
+defmodule BulkJobController do
   use GenServer
   use Forcex.Bulk.BatchHandler
   use Forcex.Bulk.JobHandler
