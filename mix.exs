@@ -24,7 +24,8 @@ defmodule Forcex.Mixfile do
         "hex.docs": :docs,
       ],
       dialyzer: [
-        plt_add_apps: [:httpoison, :erlsom, :exjsx, :ssl],
+        plt_add_deps: true,
+        plt_file: ".local.plt",
         flags: [
           # "-Wunmatched_returns",
           # "-Wrace_conditions",
