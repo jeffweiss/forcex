@@ -10,10 +10,10 @@ defmodule Forcex.Bulk.JobHandler do
       def handle_info({:job_created, job}, state) do
         handle_job_created(job, state)
       end
-      def handle_info({:job_status, %{"state" => "Closed"} = job}, state) do
+      def handle_info({:job_status, %{state: "Closed"} = job}, state) do
         handle_job_closed(job, state)
       end
-      def handle_info({:job_status, %{"numberBatchesCompleted" => num, "numberBatchesTotal" => num} = job}, state) do
+      def handle_info({:job_status, %{numberBatchesCompleted: num, numberBatchesTotal: num} = job}, state) do
         handle_job_all_batches_complete(job, state)
       end
       def handle_info({:job_status, job}, state) do

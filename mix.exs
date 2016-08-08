@@ -59,7 +59,8 @@ defmodule Forcex.Mixfile do
     [
       {:httpoison, "~> 0.8"},
       {:exjsx, "~> 3.1"},
-      {:timex, "~> 2.0"},
+      {:poison, "~> 2.2"},
+      {:timex, "~> 2.0 or ~> 3.0"},
       {:erlsom, "~> 1.4"},
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :docs},

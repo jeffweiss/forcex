@@ -40,7 +40,7 @@ defmodule Forcex.Bulk.JobWorker do
     client = Keyword.fetch!(state, :client)
     job = Keyword.fetch!(state, :job)
     handlers = Keyword.get(state, :handlers, [])
-    closed_job = %{"state" => "Closed"} = Forcex.Bulk.close_job(job, client)
+    closed_job = %{state: "Closed"} = Forcex.Bulk.close_job(job, client)
 
     notify_handlers({:job_closed, closed_job}, handlers)
     {:stop, :normal, Keyword.put(state, :job, closed_job)}

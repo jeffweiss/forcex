@@ -21,7 +21,7 @@ defmodule Forcex.Bulk do
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-    %{resp | body: JSX.decode!(body), headers: Map.drop(headers, ["Content-Type"])}
+    %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, status_code: status}) when status < 300 and status >= 200, do: body
@@ -62,20 +62,20 @@ defmodule Forcex.Bulk do
 
   @spec close_job(job | id, map) :: job
   def close_job(job, client) when is_map(job) do
-    close_job(job["id"], client)
+    close_job(job.id, client)
   end
   def close_job(id, client) when is_binary(id) do
     post("/job/#{id}", %{"state" => "Closed"}, client)
   end
 
   @spec fetch_job_status(job | id, map) :: job
-  def fetch_job_status(job, client) when is_map(job), do: fetch_job_status(job["id"], client)
+  def fetch_job_status(job, client) when is_map(job), do: fetch_job_status(job.id, client)
   def fetch_job_status(id, client) when is_binary(id) do
     get("/job/#{id}", client)
   end
 
   @spec create_query_batch(String.t, job | id, map) :: job
-  def create_query_batch(soql, job, client) when is_map(job), do: create_query_batch(soql, job["id"], client)
+  def create_query_batch(soql, job, client) when is_map(job), do: create_query_batch(soql, job.id, client)
   def create_query_batch(soql, job_id, client) when is_binary(soql) and is_binary(job_id) do
     url = "https://#{client.host}/services/async/#{client.api_version}" <> "/job/#{job_id}/batch"
     raw_request(:post, url, soql, authorization_header(client), [])
@@ -83,11 +83,11 @@ defmodule Forcex.Bulk do
 
   @spec fetch_batch_status(batch, map) :: batch
   def fetch_batch_status(batch, client) when is_map(batch) do
-    fetch_batch_status(batch["id"], batch["jobId"], client)
+    fetch_batch_status(batch.id, batch.jobId, client)
   end
   @spec fetch_batch_status(id, job | id, map) :: batch
   def fetch_batch_status(id, job, client) when is_binary(id) and is_map(job) do
-    fetch_batch_status(id, job["id"], client)
+    fetch_batch_status(id, job.id, client)
   end
   def fetch_batch_status(id, job_id, client) when is_binary(id) and is_binary(job_id) do
     get("/job/#{job_id}/batch/#{id}", client)
@@ -95,7 +95,7 @@ defmodule Forcex.Bulk do
 
   @spec fetch_batch_result_status(batch, map) :: list(String.t)
   def fetch_batch_result_status(batch, client) when is_map(batch) do
-    fetch_batch_result_status(batch["id"], batch["jobId"], client)
+    fetch_batch_result_status(batch.id, batch.jobId, client)
   end
   @spec fetch_batch_result_status(id, id, map) :: list(String.t)
   def fetch_batch_result_status(batch_id, job_id, client)  when is_binary(batch_id) and is_binary(job_id) do
@@ -104,7 +104,7 @@ defmodule Forcex.Bulk do
 
   @spec fetch_results(id, batch, map) :: list(map)
   def fetch_results(id, batch, client) when is_binary(id) and is_map(batch) do
-    fetch_results(id, batch["id"], batch["jobId"], client)
+    fetch_results(id, batch.id, batch.jobId, client)
   end
   @spec fetch_results(id, id, id, map) :: list(map)
   def fetch_results(id, batch_id, job_id, client) when is_binary(id) and is_binary(batch_id) and is_binary(job_id) do

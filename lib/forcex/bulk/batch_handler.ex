@@ -8,10 +8,10 @@ defmodule Forcex.Bulk.BatchHandler do
   defmacro __using__(_env) do
     quote do
       @behaviour Forcex.Bulk.BatchHandler
-      def handle_info({:batch_status, %{"state" => "Completed"} = batch}, state) do
+      def handle_info({:batch_status, %{state: "Completed"} = batch}, state) do
         handle_batch_completed(batch, state)
       end
-      def handle_info({:batch_status, %{"state" => "Failed"} = batch}, state) do
+      def handle_info({:batch_status, %{state: "Failed"} = batch}, state) do
         handle_batch_failed(batch, state)
       end
       def handle_info({:batch_status, batch}, state) do

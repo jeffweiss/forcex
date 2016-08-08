@@ -66,8 +66,8 @@ defmodule Forcex.Bulk.BatchWorker do
     state
     |> Keyword.fetch!(:batch)
     |> case do
-      %{"state" => "Completed"} -> {:stop, :normal, state}
-      %{"state" => "Failed", "stateMessage" => reason} -> {:stop, {:batch_failed, reason}, state}
+      %{state: "Completed"} -> {:stop, :normal, state}
+      %{state: "Failed", stateMessage: reason} -> {:stop, {:batch_failed, reason}, state}
       _ -> {:noreply, state}
     end
   end
