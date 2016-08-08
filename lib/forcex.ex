@@ -31,7 +31,7 @@ defmodule Forcex do
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-    %{resp | body: JSX.decode!(body), headers: Map.drop(headers, ["Content-Type"])}
+    %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
@@ -44,7 +44,7 @@ defmodule Forcex do
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    raw_request(method, url, JSX.encode!(body), headers, options)
+    raw_request(method, url, Poison.encode!(body), headers, options)
   end
 
   @spec raw_request(method, String.t, map | String.t, list, list) :: response
@@ -87,12 +87,12 @@ defmodule Forcex do
   end
 
   @basic_services [
-    limits: "limits",
-    describe_global: "sobjects",
-    quick_actions: "quickActions",
-    recently_viewed_items: "recent",
-    tabs: "tabs",
-    theme: "theme",
+    limits: :limits,
+    describe_global: :sobjects,
+    quick_actions: :quickActions,
+    recently_viewed_items: :recent,
+    tabs: :tabs,
+    theme: :theme,
   ]
 
   for {function, service} <- @basic_services do
@@ -106,7 +106,7 @@ defmodule Forcex do
 
   @spec describe_sobject(String.t, client) :: response
   def describe_sobject(sobject, %Forcex.Client{} = client) do
-    base = service_endpoint(client, "sobjects")
+    base = service_endpoint(client, :sobjects)
 
     "#{base}/#{sobject}/describe/"
     |> get(client)
@@ -114,7 +114,7 @@ defmodule Forcex do
 
   @spec metadata_changes_since(String.t, String.t, client) :: response
   def metadata_changes_since(sobject, since, client) do
-    base = service_endpoint(client, "sobjects")
+    base = service_endpoint(client, :sobjects)
 
     "#{base}/#{sobject}/describe/"
     |> get("", [{"If-Modified-Since", since}], client)
@@ -122,7 +122,7 @@ defmodule Forcex do
 
   @spec query(String.t, client) :: response
   def query(query, %Forcex.Client{} = client) do
-    base = service_endpoint(client, "query")
+    base = service_endpoint(client, :query)
     params = %{"q" => query} |> URI.encode_query
 
     "#{base}/?#{params}"
@@ -131,7 +131,7 @@ defmodule Forcex do
 
   @spec query_all(String.t, client) :: response
   def query_all(query, %Forcex.Client{} = client) do
-    base = service_endpoint(client, "queryAll")
+    base = service_endpoint(client, :queryAll)
     params = %{"q" => query} |> URI.encode_query
 
     "#{base}/?#{params}"
