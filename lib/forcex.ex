@@ -6,8 +6,9 @@ defmodule Forcex do
   @user_agent [{"User-agent", "forcex"}]
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
+  @content_type [{"Content-Type", "application/json"}]
 
-  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
+  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding ++ @content_type
 
   def process_headers(headers), do: Map.new(headers)
 
