@@ -45,8 +45,8 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:httpoison, "~> 0.8"},
-      {:exjsx, "~> 3.1"},
+      {:httpoison, "~> 0.9"},
+      {:exjsx, "~> 3.2"},
       {:timex, "~> 2.0"},
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11.4", only: :docs},
