@@ -89,7 +89,7 @@ or these environment variables:
 * `SALESFORCE_CLIENT_ID`
 * `SALESFORCE_CLIENT_SECRET`
 
-The endpoint (defaults to `https://login.salesforce.com`) and modules configurations are optional. The list of modules can be specified so that only particular Salesforce Objects are compiled instead of compiling entire Salesforce object. 
+The endpoint (defaults to `https://login.salesforce.com`) and modules configurations are optional. The list of modules can be specified so that only particular Salesforce Objects are compiled instead of compiling entire available Salesforce objects. 
 
 HTTPoison request-specific options may also be configured:
 
