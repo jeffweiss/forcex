@@ -56,7 +56,9 @@ config :forcex, Forcex.Client,
   password: "my_super_secret_password",
   security_token: "EMAILED_FROM_SALESFORCE",
   client_id: "CONNECTED_APP_OAUTH_CLIENT_ID",
-  client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET"
+  client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET",
+  endpoint: "https://test.salesforce.com",
+  modules: ["People"]
 ```
 
 or these environment variables:
@@ -66,6 +68,8 @@ or these environment variables:
 * `SALESFORCE_SECURITY_TOKEN`
 * `SALESFORCE_CLIENT_ID`
 * `SALESFORCE_CLIENT_SECRET`
+
+The endpoint (defaults to `https://login.salesforce.com`) and modules configurations are optional. The list of modules can be specified so that only particular Salesforce Objects are compiled instead of compiling entire Salesforce object. 
 
 HTTPoison request-specific options may also be configured:
 
