@@ -95,6 +95,13 @@ defmodule Forcex do
     |> get(client)
   end
 
+  def attachment_body(binary_path, %Forcex.Client{} = client) do
+    base = service_endpoint(client, "sobjects")
+
+    "#{base}/Attachment/#{binary_path}/Body"
+    |> get(client)
+  end
+
   def query(query, %Forcex.Client{} = client) do
     base = service_endpoint(client, "query")
     params = %{"q" => query} |> URI.encode_query
