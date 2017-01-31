@@ -20,8 +20,8 @@ defmodule Forcex.Mixfile do
         "coveralls.detail": :test,
         "coveralls.html": :test,
         "coveralls.post": :test,
-        "docs": :docs,
-        "hex.docs": :docs,
+        "docs": :dev,
+        "hex.docs": :dev,
       ],
       dialyzer: [
         plt_add_deps: true,
@@ -63,8 +63,8 @@ defmodule Forcex.Mixfile do
       {:timex, "~> 2.0 or ~> 3.0"},
       {:erlsom, "~> 1.4"},
       {:excoveralls, "~> 0.5", only: :test},
-      {:ex_doc, "~> 0.11", only: :docs},
-      {:earmark, "~> 1.1", only: :docs, override: true},
+      {:ex_doc, "~> 0.11", only: :dev},
+      {:earmark, "~> 1.1", only: :dev, override: true},
       {:dialyxir, "~> 0.4", only: :dev},
     ]
   end
