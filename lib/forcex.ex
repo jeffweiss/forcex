@@ -112,6 +112,13 @@ defmodule Forcex do
     |> get(client)
   end
 
+  def attachment_body(binary_path, %Forcex.Client{} = client) do
+    base = service_endpoint(client, "sobjects")
+
+    "#{base}/Attachment/#{binary_path}/Body"
+    |> get(client)
+  end
+
   @spec metadata_changes_since(String.t, String.t, client) :: response
   def metadata_changes_since(sobject, since, client) do
     base = service_endpoint(client, :sobjects)
