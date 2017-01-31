@@ -38,7 +38,7 @@ defmodule Forcex do
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
   @spec extra_options :: list
-  defp extra_options do
+  defp extra_options() do
     Application.get_env(:forcex, :request_options, [])
   end
 
@@ -49,7 +49,7 @@ defmodule Forcex do
 
   @spec raw_request(method, String.t, map | String.t, list, list) :: response
   def raw_request(method, url, body, headers, options) do
-    request!(method, url, body, headers, extra_options ++ options) |> process_response
+    request!(method, url, body, headers, extra_options() ++ options) |> process_response
   end
 
   @spec post(String.t, map | String.t, client) :: response

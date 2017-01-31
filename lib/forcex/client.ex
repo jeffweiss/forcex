@@ -44,7 +44,7 @@ defmodule Forcex.Client do
         Forcex.Client.login
         |> Forcex.Client.locate_services
   """
-  def login(c \\ default_config) do
+  def login(c \\ default_config()) do
     login(c, %__MODULE__{})
   end
 
@@ -71,7 +71,7 @@ defmodule Forcex.Client do
     %__MODULE__{}
   end
 
-  def default_config do
+  def default_config() do
     [:username, :password, :security_token, :client_id, :client_secret]
     |> Enum.map(&( {&1, get_val_from_env(&1)}))
     |> Enum.into(%{})

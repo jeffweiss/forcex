@@ -6,7 +6,7 @@ defmodule Forcex.Bulk do
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip"}]
   @content_type [{"Content-Type", "application/json"}]
-  @pk_chunking [{"Sforce-Enable-PKChunking", "chunkSize=50000"}]
+  #  @pk_chunking [{"Sforce-Enable-PKChunking", "chunkSize=50000"}]
 
   @type id :: binary
   @type job :: map
@@ -27,7 +27,7 @@ defmodule Forcex.Bulk do
   def process_response(%HTTPoison.Response{body: body, status_code: status}) when status < 300 and status >= 200, do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
-  defp extra_options do
+  defp extra_options() do
     Application.get_env(:forcex, :request_options, [])
   end
 
@@ -41,7 +41,7 @@ defmodule Forcex.Bulk do
   end
 
   def raw_request(method, url, body, headers, options) do
-    request!(method, url, body, headers, extra_options ++ options) |> process_response
+    request!(method, url, body, headers, extra_options() ++ options) |> process_response
   end
 
   def get(path, headers \\ [], client) do

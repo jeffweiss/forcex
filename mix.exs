@@ -8,11 +8,11 @@ defmodule Forcex.Mixfile do
   def project do
     [
       app: :forcex,
-      version: "0.4.1",
+      version: "0.5.0",
       elixir: "~> 1.0",
       name: "Forcex",
       description: @description,
-      package: package,
+      package: package(),
       # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
@@ -35,7 +35,7 @@ defmodule Forcex.Mixfile do
           # "-Wspecdiffs",
         ]
       ],
-      deps: deps,
+      deps: deps(),
    ]
   end
 
@@ -64,8 +64,8 @@ defmodule Forcex.Mixfile do
       {:erlsom, "~> 1.4"},
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :docs},
-      {:earmark, "~> 1.0", only: :docs, override: true},
-      {:dialyxir, "~> 0.3", only: :dev},
+      {:earmark, "~> 1.1", only: :docs, override: true},
+      {:dialyxir, "~> 0.4", only: :dev},
     ]
   end
 

@@ -36,7 +36,7 @@ defmodule Forcex.Bulk.Client do
 
       client = Forcex.Bulk.Client.login
   """
-  def login(c \\ default_config) do
+  def login(c \\ default_config()) do
     login(c, %__MODULE__{})
   end
   def login(conf, starting_struct) do
@@ -83,7 +83,7 @@ defmodule Forcex.Bulk.Client do
     value |> to_string
   end
 
-  def default_config do
+  def default_config() do
     [:username, :password, :security_token]
     |> Enum.map(&( {&1, get_val_from_env(&1)}))
     |> Enum.into(%{})
