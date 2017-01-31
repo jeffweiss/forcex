@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Compile.Forcex do
     sobjects =
       client
       |> Forcex.describe_global
-      |> Map.get("sobjects")
+      |> Map.get(:sobjects)
 
     for sobject <- sobjects do
       sobject
@@ -31,20 +31,20 @@ defmodule Mix.Tasks.Compile.Forcex do
   end
 
   defp generate_module(sobject, client) do
-    name = Map.get(sobject, "name")
-    urls = Map.get(sobject, "urls")
-    describe_url = Map.get(urls, "describe")
-    sobject_url = Map.get(urls, "sobject")
-    row_template_url = Map.get(urls, "rowTemplate")
+    name = sobject.name
+    urls = sobject.urls
+    describe_url = urls.describe
+    sobject_url = urls.sobject
+    row_template_url = urls.rowTemplate
     full_description = Forcex.describe_sobject(name, client)
 
     quote location: :keep do
       defmodule unquote(Module.concat(Forcex.SObject, name)) do
         @moduledoc """
-        Dynamically generated module for `#{unquote(Map.get(full_description, "label"))}`
+        Dynamically generated module for `#{unquote(full_description.label)}`
 
         ## Fields
-        #{unquote(for field <- Map.get(full_description, "fields"), do: docs_for_field(field))}
+        #{unquote(for field <- full_description.fields, do: docs_for_field(field))}
 
         """
 
@@ -201,17 +201,17 @@ defmodule Mix.Tasks.Compile.Forcex do
 
   end
 
-  defp docs_for_field(%{"name" => name, "type" => type, "label" => label, "picklistValues" => values}) when type in ["picklist", "multipicklist"] do
+  defp docs_for_field(%{name: name, type: type, label: label, picklistValues: values}) when type in [:picklist, :multipicklist] do
     """
     * `#{name}` - `#{type}`, #{label}
     #{for value <- values, do: docs_for_picklist_values(value)}
     """
   end
-  defp docs_for_field(%{"name" => name, "type" => type, "label" => label}) do
+  defp docs_for_field(%{name: name, type: type, label: label}) do
     "* `#{name}` - `#{type}`, #{label}\n"
   end
 
-  defp docs_for_picklist_values(%{"value" => value, "active" => true}) do
+  defp docs_for_picklist_values(%{value: value, active: true}) do
 "     * `#{value}`\n"
   end
   defp docs_for_picklist_values(_), do: ""

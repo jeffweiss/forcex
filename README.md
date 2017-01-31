@@ -44,6 +44,26 @@ This can also be invoked automatically by adding Forcex to your project's compil
 compilers: [:forcex] ++ Mix.compilers,
 ```
 
+## Bulk API Usage
+
+Forcex has an example Bulk API query job controller. Here's roughly how that can
+work.
+
+```elixir
+client = Forcex.Bulk.Client.login
+[
+  "Account",
+  "Campaign",
+  "Contact",
+  "Lead",
+  "Opportunity",
+  "OpportunityLineItem",
+]
+|> Enum.map(fn sobject -> {sobject, ["select Id, Name from #{sobject}"]} end)
+|> Enum.map(fn {sobject, queries} ->
+Forcex.Bulk.JobController.start_link({:query, sobject, queries, client}) end)
+```
+
 ## Configuration
 
 The `Forcex.Client` is configured to read login information either from

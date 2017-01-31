@@ -60,9 +60,10 @@ defmodule Forcex.Client do
   def locate_services(client) do
     services = Forcex.services(client)
     %{client | services: services}
+    |> IO.inspect
   end
 
-  defp handle_login_response(%{"access_token" => token, "token_type" => token_type, "instance_url" => endpoint}) do
+  defp handle_login_response(%{access_token: token, token_type: token_type, instance_url: endpoint}) do
     %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
   end
   defp handle_login_response({status_code, error_message}) do
