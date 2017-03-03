@@ -113,6 +113,14 @@ defmodule Forcex do
     |> get(client)
   end
 
+  @spec materialize_sobjects(client) :: {:ok, [module()]}
+  def materialize_sobjects(%Forcex.Client{} = client) do
+    sobject_modules = describe_global(client)
+    |> Map.get(:sobjects)
+    |> Enum.map(fn sobject -> materialize(sobject, client) end)
+    {:ok, sobject_modules}
+  end
+
   def attachment_body(binary_path, %Forcex.Client{} = client) do
     base = service_endpoint(client, "sobjects")
 
@@ -144,6 +152,21 @@ defmodule Forcex do
 
     "#{base}/?#{params}"
     |> get(client)
+  end
+
+  @spec materialize(map, client) :: {:ok, module()}
+  defp materialize(%{name: name, urls: %{sobject: sobject_path}} = sobject, client) do
+    module_name = Module.concat(__MODULE__, name)
+    contents = quote do
+      import unquote(__MODULE__)
+      def create(body, client), do: post(unquote(sobject_path), body, client) |> Map.get(:id)
+      def update(id, body, client), do: patch(unquote(sobject_path) <> "/#{id}", body, client)
+      def get_by_id(id, client), do: get(unquote(sobject_path) <> "/#{id}", client)
+      def get_by_external_id(id_field, id, client), do: get(unquote(sobject_path) <> "/#{id_field}" <> "/#{id}", client)
+      def delete(id, client), do: Forcex.delete(unquote(sobject_path) <> "/#{id}", client)
+    end
+    Module.create module_name, contents, Macro.Env.location(__ENV__)
+    module_name
   end
 
   @spec service_endpoint(client, String.t) :: String.t
