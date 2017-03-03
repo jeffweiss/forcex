@@ -5,6 +5,7 @@ defmodule Forcex do
   @user_agent [{"User-agent", "forcex"}]
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
+  @content_type [{"Content-Type", "application/json"}]
 
   @type client :: map
   @type response :: map | {number, any}
@@ -34,7 +35,7 @@ defmodule Forcex do
     %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
-  def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
+  def process_response(%HTTPoison.Response{body: body, status_code: status}) when status in [200, 201, 204], do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
   @spec extra_options :: list
@@ -44,7 +45,7 @@ defmodule Forcex do
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    raw_request(method, url, Poison.encode!(body), headers, options)
+    raw_request(method, url, Poison.encode!(body), headers ++ @content_type, options)
   end
 
   @spec raw_request(method, String.t, map | String.t, list, list) :: response
@@ -112,6 +113,14 @@ defmodule Forcex do
     |> get(client)
   end
 
+  @spec materialize_sobjects(client) :: {:ok, [module()]}
+  def materialize_sobjects(%Forcex.Client{} = client) do
+    sobject_modules = describe_global(client)
+    |> Map.get(:sobjects)
+    |> Enum.map(fn sobject -> materialize(sobject, client) end)
+    {:ok, sobject_modules}
+  end
+
   def attachment_body(binary_path, %Forcex.Client{} = client) do
     base = service_endpoint(client, "sobjects")
 
@@ -143,6 +152,21 @@ defmodule Forcex do
 
     "#{base}/?#{params}"
     |> get(client)
+  end
+
+  @spec materialize(map, client) :: {:ok, module()}
+  defp materialize(%{name: name, urls: %{sobject: sobject_path}} = sobject, client) do
+    module_name = Module.concat(__MODULE__, name)
+    contents = quote do
+      import unquote(__MODULE__)
+      def create(body, client), do: post(unquote(sobject_path), body, client) |> Map.get(:id)
+      def update(id, body, client), do: patch(unquote(sobject_path) <> "/#{id}", body, client)
+      def get_by_id(id, client), do: get(unquote(sobject_path) <> "/#{id}", client)
+      def get_by_external_id(id_field, id, client), do: get(unquote(sobject_path) <> "/#{id_field}" <> "/#{id}", client)
+      def delete(id, client), do: Forcex.delete(unquote(sobject_path) <> "/#{id}", client)
+    end
+    Module.create module_name, contents, Macro.Env.location(__ENV__)
+    module_name
   end
 
   @spec service_endpoint(client, String.t) :: String.t
