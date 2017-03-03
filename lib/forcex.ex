@@ -5,6 +5,7 @@ defmodule Forcex do
   @user_agent [{"User-agent", "forcex"}]
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
+  @content_type [{"Content-Type", "application/json"}]
 
   @type client :: map
   @type response :: map | {number, any}
@@ -44,7 +45,7 @@ defmodule Forcex do
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    raw_request(method, url, Poison.encode!(body), headers, options)
+    raw_request(method, url, Poison.encode!(body), headers ++ @content_type, options)
   end
 
   @spec raw_request(method, String.t, map | String.t, list, list) :: response
