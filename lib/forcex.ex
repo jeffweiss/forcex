@@ -35,7 +35,7 @@ defmodule Forcex do
     %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
-  def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
+  def process_response(%HTTPoison.Response{body: body, status_code: status}) when status in [200, 201, 204], do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
   @spec extra_options :: list
