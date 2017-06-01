@@ -52,28 +52,28 @@ defmodule Forcex do
     request!(method, url, body, headers, extra_options() ++ options) |> process_response
   end
 
-  @spec post(String.t, map | String.t, client) :: response
-  def post(path, body \\ "", client) do
+  @spec post(String.t, map | String.t, list, client) :: response
+  def post(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, authorization_header(client), [])
+    json_request(:post, url, body, headers ++ authorization_header(client), [])
   end
 
-  @spec patch(String.t, String.t, client) :: response
-  def patch(path, body \\ "", client) do
+  @spec patch(String.t, String.t, list, client) :: response
+  def patch(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:patch, url, body, authorization_header(client), [])
+    json_request(:patch, url, body, headers ++ authorization_header(client), [])
   end
 
-  @spec delete(String.t, client) :: response
-  def delete(path, client) do
+  @spec delete(String.t, list, client) :: response
+  def delete(path, headers \\ [], client) do
     url = client.endpoint <> path
-    raw_request(:delete, url, "", authorization_header(client), [])
+    raw_request(:delete, url, "", headers ++ authorization_header(client), [])
   end
 
-  @spec get(String.t, map | String.t, list, client) :: response
-  def get(path, body \\ "", headers \\ [], client) do
+  @spec get(String.t, list, client) :: response
+  def get(path, headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:get, url, body, headers ++ authorization_header(client), [])
+    json_request(:get, url, "", headers ++ authorization_header(client), [])
   end
 
   @spec versions(client) :: response
@@ -124,7 +124,7 @@ defmodule Forcex do
     base = service_endpoint(client, :sobjects)
 
     "#{base}/#{sobject}/describe/"
-    |> get("", [{"If-Modified-Since", since}], client)
+    |> get([{"If-Modified-Since", since}], client)
   end
 
   @spec query(String.t, client) :: response
