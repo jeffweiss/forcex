@@ -55,7 +55,6 @@ defmodule Forcex.Bulk.Client do
       {"Content-Type", "text/xml; charset=UTF-8"},
       {"SOAPAction", "login"},
     ]
-    url = "https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}"
     HTTPoison.post!("https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}", envelope, headers)
     |> parse_login_response
   end
