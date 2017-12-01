@@ -9,7 +9,7 @@ defmodule Forcex.Mixfile do
     [
       app: :forcex,
       version: "0.5.0",
-      elixir: "~> 1.0",
+      elixir: "~> 1.5",
       name: "Forcex",
       description: @description,
       package: package(),
@@ -57,9 +57,9 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:httpoison, "~> 0.8"},
-      {:exjsx, "~> 3.1"},
-      {:poison, "~> 2.2"},
+      {:httpoison, "~> 0.13"},
+      {:exjsx, "~> 4.0"},
+      {:poison, "~> 3.1"},
       {:timex, "~> 2.0 or ~> 3.0"},
       {:erlsom, "~> 1.4"},
       {:excoveralls, "~> 0.5", only: :test},

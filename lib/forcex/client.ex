@@ -1,5 +1,5 @@
 defmodule Forcex.Client do
-  defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com", services: %{}
+  defstruct access_token: nil, api_version: "41.0", token_type: nil, endpoint: "https://login.salesforce.com", services: %{}
 
   require Logger
 
