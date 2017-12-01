@@ -10,7 +10,7 @@ defmodule Forcex.Util do
 
   defp to_number(string) when is_binary(string) do
     string
-    |> to_char_list
+    |> to_charlist
     |> Enum.map(&char_to_num/1)
     |> Enum.reduce(fn (v, acc) -> acc * 62 + v end)
   end

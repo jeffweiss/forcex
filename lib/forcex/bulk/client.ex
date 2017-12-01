@@ -78,7 +78,7 @@ defmodule Forcex.Bulk.Client do
   end
 
   defp extract_from_parameters(params, key) do
-    compound_key = "{urn:partner.soap.sforce.com}#{key}" |> to_char_list
+    compound_key = "{urn:partner.soap.sforce.com}#{key}" |> to_charlist
     {^compound_key, _, [value]} = :lists.keyfind(compound_key, 1, params)
     value |> to_string
   end
