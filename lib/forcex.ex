@@ -5,13 +5,14 @@ defmodule Forcex do
   @user_agent [{"User-agent", "forcex"}]
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
+  @content_type [{"Content-Type", "application/json; charset=utf-8"}]
 
   @type client :: map
   @type response :: map | {number, any}
   @type method :: :get | :put | :post | :patch | :delete
 
   @spec process_request_headers(list({String.t, String.t})) :: list({String.t, String.t})
-  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
+  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding ++ @content_type
 
   @spec process_headers(list({String.t, String.t})) :: map
   def process_headers(headers), do: Map.new(headers)
@@ -34,7 +35,7 @@ defmodule Forcex do
     %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
-  def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
+  def process_response(%HTTPoison.Response{body: body, status_code: status}) when status in [200, 201, 204], do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
   @spec extra_options :: list
