@@ -12,6 +12,8 @@ defmodule Mix.Tasks.Compile.Forcex do
       %{access_token: nil} -> IO.puts("Invalid configuration/credentials. Cannot generate SObjects.")
       _ -> generate_modules(client)
     end
+
+    :ok
   end
 
   defp generate_modules(client) do
