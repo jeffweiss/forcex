@@ -17,6 +17,10 @@ defmodule Forcex do
   def process_headers(headers), do: Map.new(headers)
 
   @spec process_response(HTTPoison.Response.t) :: response
+  def process_response(%HTTPoison.Response{body: "", headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
+    %{resp | body: "", headers: Map.drop(headers, ["Content-Encoding"])}
+    |> process_response
+  end
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
     %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
     |> process_response
@@ -28,6 +32,10 @@ defmodule Forcex do
     :zlib.inflateEnd(zstream)
     :zlib.close(zstream)
     %{resp | body: uncompressed_data, headers: Map.drop(headers, ["Content-Encoding"])}
+    |> process_response
+  end
+  def process_response(%HTTPoison.Response{body: "", headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
+    %{resp | body: %{}, headers: Map.drop(headers, ["Content-Type"])}
     |> process_response
   end
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
