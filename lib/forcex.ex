@@ -55,25 +55,25 @@ defmodule Forcex do
   @spec post(String.t, map | String.t, client) :: response
   def post(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, authorization_header(client), [])
+    json_request(:post, url, body, client.authorization_header, [])
   end
 
   @spec patch(String.t, String.t, client) :: response
   def patch(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:patch, url, body, authorization_header(client), [])
+    json_request(:patch, url, body, client.authorization_header, [])
   end
 
   @spec delete(String.t, client) :: response
   def delete(path, client) do
     url = client.endpoint <> path
-    raw_request(:delete, url, "", authorization_header(client), [])
+    raw_request(:delete, url, "", client.authorization_header, [])
   end
 
   @spec get(String.t, map | String.t, list, client) :: response
   def get(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:get, url, body, headers ++ authorization_header(client), [])
+    json_request(:get, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec versions(client) :: response
@@ -148,11 +148,5 @@ defmodule Forcex do
   @spec service_endpoint(client, String.t) :: String.t
   defp service_endpoint(%Forcex.Client{services: services}, service) do
     Map.get(services, service)
-  end
-
-  @spec authorization_header(client) :: list
-  defp authorization_header(%{access_token: nil}), do: []
-  defp authorization_header(%{access_token: token, token_type: type}) do
-    [{"Authorization", type <> " " <> token}]
   end
 end
