@@ -10,7 +10,7 @@ defmodule Forcex.Auth.SessionId do
     schema_instance = "http://www.w3.org/2001/XMLSchema-instance"
     env = "http://schemas.xmlsoap.org/soap/envelope/"
 
-    envelope = """
+    body = """
     <?xml version="1.0" encoding="utf-8" ?>
     <env:Envelope xmlns:xsd="#{schema}" xmlns:xsi="#{schema_instance}" xmlns:env="#{env}">
     <env:Body>
@@ -27,12 +27,13 @@ defmodule Forcex.Auth.SessionId do
       {"SOAPAction", "login"}
     ]
 
-    "https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}"
-    |> HTTPoison.post!(envelope, headers)
+    url = "https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}"
+
+    Forcex.Api.Http.raw_request(:post, url, body, headers, [])
     |> handle_login_response
   end
 
-  defp handle_login_response(%HTTPoison.Response{body: body, status_code: 200}) do
+  defp handle_login_response(body) do
     {:ok,
      {'{http://schemas.xmlsoap.org/soap/envelope/}Envelope', _,
       [
