@@ -69,4 +69,30 @@ defmodule Forcex.ClientTest do
       assert client.endpoint == "https://forcex.my.salesforce.com"
     end
   end
+
+  describe "locate_services" do
+    test "when successful sets servies on the client" do
+      response = %{
+        jobs: "/services/data/v41.0/jobs",
+        query: "/services/data/v41.0/query",
+      }
+
+      endpoint = "https://forcex.my.salesforce.com"
+      api_version = "41.0"
+      auth_header = [{"Authorization", "Bearer sometoken"}]
+      services_url = endpoint <> "/services/data/v" <> api_version
+
+      Forcex.Api.MockHttp
+      |> expect(:raw_request, fn(:get, ^services_url, _, ^auth_header, _) -> response end)
+
+      client = %Forcex.Client{
+        endpoint: endpoint,
+        authorization_header: auth_header,
+        api_version: api_version
+      }
+
+      client = client |> Forcex.Client.locate_services
+      assert client.services == response
+    end
+  end
 end
