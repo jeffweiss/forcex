@@ -2,6 +2,9 @@ defmodule Forcex.Api.Http do
   @moduledoc """
   HTTP communication with Salesforce API
   """
+
+  @behaviour Forcex.Api
+  require Logger
   use HTTPoison.Base
 
   @user_agent [{"User-agent", "forcex"}]
@@ -11,9 +14,10 @@ defmodule Forcex.Api.Http do
   @type method :: :get | :put | :post | :patch | :delete
   @type response :: map | {number, any}
 
-  @spec raw_request(method, String.t, map | String.t, list, list) :: response
   def raw_request(method, url, body, headers, options) do
-    method |> request!(url, body, headers, extra_options() ++ options) |> process_response
+    response = method |> request!(url, body, headers, extra_options() ++ options) |> process_response
+    Logger.debug("#{__ENV__.module}.#{elem(__ENV__.function, 0)} response=" <> inspect(response))
+    response
   end
 
   @spec extra_options :: list

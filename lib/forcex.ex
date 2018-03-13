@@ -9,9 +9,11 @@ defmodule Forcex do
   @type response :: map | {number, any}
   @type method :: :get | :put | :post | :patch | :delete
 
+  @api Application.get_env(:forcex, :api) || Forcex.Api.Http
+
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    Forcex.Api.Http.raw_request(method, url, Poison.encode!(body), headers, options)
+    @api.raw_request(method, url, Poison.encode!(body), headers, options)
   end
 
   @spec post(String.t, map | String.t, client) :: response
@@ -29,7 +31,7 @@ defmodule Forcex do
   @spec delete(String.t, client) :: response
   def delete(path, client) do
     url = client.endpoint <> path
-    Forcex.Api.Http.raw_request(:delete, url, "", client.authorization_header, [])
+    @api.raw_request(:delete, url, "", client.authorization_header, [])
   end
 
   @spec get(String.t, map | String.t, list, client) :: response

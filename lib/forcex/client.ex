@@ -61,7 +61,7 @@ defmodule Forcex.Client do
   end
 
   def login(conf, starting_struct) do
-    Logger.debug(inspect(conf))
+    Logger.debug("conf=" <> inspect(conf))
     case conf do
       %{client_id: _} -> struct(__MODULE__, Forcex.Auth.OAuth.login(conf, starting_struct))
       %{security_token: _} -> struct(__MODULE__, Forcex.Auth.SessionId.login(conf, starting_struct))

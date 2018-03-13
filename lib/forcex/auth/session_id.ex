@@ -3,7 +3,9 @@ defmodule Forcex.Auth.SessionId do
   Auth via a session id
   """
 
+  require Logger
   @behaviour Forcex.Auth
+  @api Application.get_env(:forcex, :api) || Forcex.Api.Http
 
   def login(conf, starting_struct) do
     schema = "http://www.w3.org/2001/XMLSchema"
@@ -29,7 +31,8 @@ defmodule Forcex.Auth.SessionId do
 
     url = "https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}"
 
-    Forcex.Api.Http.raw_request(:post, url, body, headers, [])
+    Logger.debug("api=#{@api}")
+    @api.raw_request(:post, url, body, headers, [])
     |> handle_login_response
   end
 
