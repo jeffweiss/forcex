@@ -36,8 +36,12 @@ defmodule Forcex.Mixfile do
         ]
       ],
       deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env)
    ]
   end
+
+  defp elixirc_paths(:test), do: ["test/support", "lib"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   # Configuration for the OTP application
   #
@@ -66,12 +70,14 @@ defmodule Forcex.Mixfile do
       {:ex_doc, "~> 0.11", only: :dev},
       {:earmark, "~> 1.1", only: :dev, override: true},
       {:dialyxir, "~> 0.4", only: :dev},
+      {:mox, "~> 0.3", only: :test},
+      {:mix_test_watch, "~> 0.5", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp package do
-    [ maintainers: ["Jeff Weiss"],
+    [maintainers: ["Jeff Weiss"],
       licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/jeffweiss/forcex"} ]
+      links: %{"Github" => "https://github.com/jeffweiss/forcex"}]
   end
 end
