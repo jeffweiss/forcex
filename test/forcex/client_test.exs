@@ -5,32 +5,48 @@ defmodule Forcex.ClientTest do
   setup :verify_on_exit!
 
   describe "session_id based login" do
-    test "sets the auth header and endpoint when successful" do
-      session_id = "forcex_session_id"
-      server_url = "https://forcex.my.salesforce.com/services/Soap/u/41.0/00Dd0000000cQ8L"
-      org_id = "org_id"
-
-      response = """
-      <?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns=\"urn:partner.soap.sforce.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><soapenv:Body><loginResponse><result><metadataServerUrl>#{server_url}</metadataServerUrl><passwordExpired>false</passwordExpired><sandbox>false</sandbox><serverUrl>#{server_url}</serverUrl><sessionId>#{session_id}</sessionId><userId>005d0000001Jb9tAAC</userId><userInfo><accessibilityMode>false</accessibilityMode><chatterExternal>false</chatterExternal><currencySymbol>$</currencySymbol><orgAttachmentFileSizeLimit>5242880</orgAttachmentFileSizeLimit><orgDefaultCurrencyIsoCode>USD</orgDefaultCurrencyIsoCode><orgDefaultCurrencyLocale>en_US</orgDefaultCurrencyLocale><orgDisallowHtmlAttachments>false</orgDisallowHtmlAttachments><orgHasPersonAccounts>true</orgHasPersonAccounts><organizationId>#{org_id}</organizationId><organizationMultiCurrency>false</organizationMultiCurrency><organizationName>MY-ORG</organizationName><profileId>00ed0000000Ods2AAC</profileId><roleId>00Ed0000000II8UEAW</roleId><sessionSecondsValid>7200</sessionSecondsValid><userDefaultCurrencyIsoCode xsi:nil=\"true\"/><userEmail>forcex@example.com</userEmail><userFullName>John Doe</userFullName><userId>005d0000001Jb9tAAC</userId><userLanguage>en_US</userLanguage><userLocale>en_US</userLocale><userName>forcex@example.com</userName><userTimeZone>America/New_York</userTimeZone><userType>Standard</userType><userUiSkin>Theme3</userUiSkin></userInfo></result></loginResponse></soapenv:Body></soapenv:Envelope>
+    @session_id "forcex_session_id"
+    @server_url "https://forcex.my.salesforce.com/services/Soap/u/41.0/00Dd0000000cQ8L"
+    @org_id "org_id"
+    @response """
+      <?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns=\"urn:partner.soap.sforce.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><soapenv:Body><loginResponse><result><metadataServerUrl>#{@server_url}</metadataServerUrl><passwordExpired>false</passwordExpired><sandbox>false</sandbox><serverUrl>#{@server_url}</serverUrl><sessionId>#{@session_id}</sessionId><userId>005d0000001Jb9tAAC</userId><userInfo><accessibilityMode>false</accessibilityMode><chatterExternal>false</chatterExternal><currencySymbol>$</currencySymbol><orgAttachmentFileSizeLimit>5242880</orgAttachmentFileSizeLimit><orgDefaultCurrencyIsoCode>USD</orgDefaultCurrencyIsoCode><orgDefaultCurrencyLocale>en_US</orgDefaultCurrencyLocale><orgDisallowHtmlAttachments>false</orgDisallowHtmlAttachments><orgHasPersonAccounts>true</orgHasPersonAccounts><organizationId>#{@org_id}</organizationId><organizationMultiCurrency>false</organizationMultiCurrency><organizationName>MY-ORG</organizationName><profileId>00ed0000000Ods2AAC</profileId><roleId>00Ed0000000II8UEAW</roleId><sessionSecondsValid>7200</sessionSecondsValid><userDefaultCurrencyIsoCode xsi:nil=\"true\"/><userEmail>forcex@example.com</userEmail><userFullName>John Doe</userFullName><userId>005d0000001Jb9tAAC</userId><userLanguage>en_US</userLanguage><userLocale>en_US</userLocale><userName>forcex@example.com</userName><userTimeZone>America/New_York</userTimeZone><userType>Standard</userType><userUiSkin>Theme3</userUiSkin></userInfo></result></loginResponse></soapenv:Body></soapenv:Envelope>
 """
 
-      Forcex.Api.MockHttp
-      |> expect(:raw_request, fn :post, _, _, _, _ -> response end)
-
+    test "sets the auth header and endpoint when successful" do
       config = %{
         password: "password",
         security_token: "security_token",
         username: "forcex@example.com"
       }
 
+      Forcex.Api.MockHttp
+      |> expect(:raw_request, fn :post, _, _, _, _ -> @response end)
+
       client = Forcex.Client.login(config)
 
       assert client.authorization_header == [{
         "Authorization",
-        "Bearer #{session_id}"
+        "Bearer #{@session_id}"
       }]
 
       assert client.endpoint == "https://forcex.my.salesforce.com/"
+    end
+
+    test "login info is HTML encoded" do
+      config = %{
+        password: "amper&and",
+        security_token: "flash!",
+        username: "<<probablynotvalid>>@example.com"
+      }
+
+      encoded_config = for {key, val} <- config, into: %{}, do: {key, HtmlEntities.encode(val)}
+
+      expected_body = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<env:Envelope xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<env:Body>\n<n1:login xmlns:n1=\"urn:partner.soap.sforce.com\">\n  <n1:username>&lt;&lt;probablynotvalid&gt;&gt;@example.com</n1:username>\n  <n1:password>amper&amp;andflash!</n1:password>\n</n1:login>\n</env:Body>\n</env:Envelope>\n"
+
+      Forcex.Api.MockHttp
+      |> expect(:raw_request, fn :post, _, ^expected_body, _, _ -> @response end)
+
+      client = Forcex.Client.login(config)
     end
   end
 
