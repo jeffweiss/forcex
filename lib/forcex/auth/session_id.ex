@@ -12,6 +12,10 @@ defmodule Forcex.Auth.SessionId do
     schema_instance = "http://www.w3.org/2001/XMLSchema-instance"
     env = "http://schemas.xmlsoap.org/soap/envelope/"
 
+    # Encode otherwise response comes back with error like
+    # UNKNOWN_EXCEPTION: The reference to entity &quot;v4Hq&quot; must end with the &apos;;&apos; delimiter.
+    conf = for {key, val} <- conf, into: %{}, do: {key, HtmlEntities.encode(val)}
+
     body = """
     <?xml version="1.0" encoding="utf-8" ?>
     <env:Envelope xmlns:xsd="#{schema}" xmlns:xsi="#{schema_instance}" xmlns:env="#{env}">
@@ -29,7 +33,7 @@ defmodule Forcex.Auth.SessionId do
       {"SOAPAction", "login"}
     ]
 
-    url = "https://login.salesforce.com/services/Soap/u/#{starting_struct.api_version}"
+    url = starting_struct.endpoint <> "/services/Soap/u/#{starting_struct.api_version}"
 
     Logger.debug("api=#{@api}")
     @api.raw_request(:post, url, body, headers, [])
