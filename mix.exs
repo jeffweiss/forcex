@@ -8,7 +8,7 @@ defmodule Forcex.Mixfile do
   def project do
     [
       app: :forcex,
-      version: "0.6.1",
+      version: "0.6.2",
       elixir: "~> 1.5",
       name: "Forcex",
       description: @description,
@@ -47,7 +47,7 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl]]
+    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl, :html_entities]]
   end
 
   # Dependencies can be Hex packages:
