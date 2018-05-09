@@ -8,7 +8,7 @@ defmodule Forcex.Mixfile do
   def project do
     [
       app: :forcex,
-      version: "0.6.2",
+      version: "0.7.0",
       elixir: "~> 1.5",
       name: "Forcex",
       description: @description,
@@ -77,7 +77,7 @@ defmodule Forcex.Mixfile do
   end
 
   defp package do
-    [maintainers: ["Jeff Weiss"],
+    [maintainers: ["Jeff Weiss", "Matt Robinson"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/jeffweiss/forcex"}]
   end
