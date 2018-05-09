@@ -1,10 +1,12 @@
 defmodule Forcex.Client do
+  require Logger
+
+  @default_endpoint "https://login.salesforce.com"
+
   defstruct api_version: "41.0",
             authorization_header: [],
-            endpoint: "https://login.salesforce.com",
+            endpoint: @default_endpoint,
             services: %{}
-
-  require Logger
 
   @moduledoc """
   This client delegates login to the appropriate endpoint depending on the
@@ -27,7 +29,8 @@ defmodule Forcex.Client do
         password: "...",
         security_token: "...",
         client_id: "...",
-        client_secret: "..."
+        client_secret: "...",
+        endpoint: "..."
       }
 
   Environment variables
@@ -36,6 +39,7 @@ defmodule Forcex.Client do
     - `SALESFORCE_SECURITY_TOKEN`
     - `SALESFORCE_CLIENT_ID`
     - `SALESFORCE_CLIENT_SECRET`
+    - `SALESFORCE_ENDPOINT`
 
   Application configuration
 
@@ -44,7 +48,8 @@ defmodule Forcex.Client do
         password: "my_super_secret_password",
         security_token: "EMAILED_FROM_SALESFORCE",
         client_id: "CONNECTED_APP_OAUTH_CLIENT_ID",
-        client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET"
+        client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET",
+        endpoint: "login.salesforce.com"
 
   If no `client_id` is passed login via session id will be attempted with
   `security_token`.
@@ -56,8 +61,8 @@ defmodule Forcex.Client do
         Forcex.Client.login
         |> Forcex.Client.locate_services
   """
-  def login(c \\ default_config()) do
-    login(c, %__MODULE__{})
+  def login(config \\ default_config()) do
+    login(config, %__MODULE__{endpoint: config[:endpoint] || @default_endpoint})
   end
 
   def login(conf, starting_struct) do
@@ -76,7 +81,7 @@ defmodule Forcex.Client do
   end
 
   def default_config() do
-    [:username, :password, :security_token, :client_id, :client_secret]
+    [:username, :password, :security_token, :client_id, :client_secret, :endpoint]
     |> Enum.map(&({&1, get_val_from_env(&1)}))
     |> Enum.filter(fn {_, v} -> v end)
     |> Enum.into(%{})

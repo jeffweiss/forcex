@@ -10,6 +10,7 @@ defmodule Forcex.Auth.OAuth do
       conf
       |> Map.put(:password, "#{conf.password}#{conf.security_token}")
       |> Map.put(:grant_type, "password")
+      |> Map.delete(:endpoint)
 
     "/services/oauth2/token?#{URI.encode_query(login_payload)}"
     |> Forcex.post(starting_struct)

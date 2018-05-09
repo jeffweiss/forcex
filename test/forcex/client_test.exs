@@ -10,7 +10,7 @@ defmodule Forcex.ClientTest do
     @org_id "org_id"
     @response """
       <?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns=\"urn:partner.soap.sforce.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><soapenv:Body><loginResponse><result><metadataServerUrl>#{@server_url}</metadataServerUrl><passwordExpired>false</passwordExpired><sandbox>false</sandbox><serverUrl>#{@server_url}</serverUrl><sessionId>#{@session_id}</sessionId><userId>005d0000001Jb9tAAC</userId><userInfo><accessibilityMode>false</accessibilityMode><chatterExternal>false</chatterExternal><currencySymbol>$</currencySymbol><orgAttachmentFileSizeLimit>5242880</orgAttachmentFileSizeLimit><orgDefaultCurrencyIsoCode>USD</orgDefaultCurrencyIsoCode><orgDefaultCurrencyLocale>en_US</orgDefaultCurrencyLocale><orgDisallowHtmlAttachments>false</orgDisallowHtmlAttachments><orgHasPersonAccounts>true</orgHasPersonAccounts><organizationId>#{@org_id}</organizationId><organizationMultiCurrency>false</organizationMultiCurrency><organizationName>MY-ORG</organizationName><profileId>00ed0000000Ods2AAC</profileId><roleId>00Ed0000000II8UEAW</roleId><sessionSecondsValid>7200</sessionSecondsValid><userDefaultCurrencyIsoCode xsi:nil=\"true\"/><userEmail>forcex@example.com</userEmail><userFullName>John Doe</userFullName><userId>005d0000001Jb9tAAC</userId><userLanguage>en_US</userLanguage><userLocale>en_US</userLocale><userName>forcex@example.com</userName><userTimeZone>America/New_York</userTimeZone><userType>Standard</userType><userUiSkin>Theme3</userUiSkin></userInfo></result></loginResponse></soapenv:Body></soapenv:Envelope>
-"""
+    """
 
     test "sets the auth header and endpoint when successful" do
       config = %{
@@ -83,6 +83,76 @@ defmodule Forcex.ClientTest do
       }]
 
       assert client.endpoint == "https://forcex.my.salesforce.com"
+    end
+  end
+
+  describe "default login behavior" do
+
+    test "default endpoint provided by client struct is login.salesforce.com" do
+      initial_struct = %Forcex.Client{}
+      assert initial_struct.endpoint == "https://login.salesforce.com"
+    end
+
+    test "can override default endpoint in the client struct" do
+      other_endpoint = "https://test.salesforce.com"
+      initial_struct = %Forcex.Client{endpoint: other_endpoint}
+      assert initial_struct.endpoint == "https://test.salesforce.com"
+    end
+
+    test "when provided config with no endpoint, default to login.salesforce.com" do
+      config = %{
+        password: "password",
+        security_token: "security_token",
+        username: "forcex@example.com",
+        client_id: "big_ol_id",
+        client_secret: "sssshhhhhhhh"
+      }
+
+      response = %{
+        access_token: "access_token",
+        id: "https://login.salesforce.com/id/org_id/005d0000001Jb9tAAC",
+        instance_url: "https://forcex.my.salesforce.com",
+        issued_at: "1520973086810",
+        signature: "oo7i3klbG6OjXlMFQSBzFaNYCP9pnWZ98f6Kdu/Th2Q=",
+        token_type: "Bearer"
+      }
+
+      Forcex.Api.MockHttp
+      |> expect(:raw_request, fn :post, url, _, _, _ ->
+          assert String.starts_with?(url, "https://login.salesforce.com") == true
+          response
+          end)
+
+      Forcex.Client.login(config)
+    end
+
+    test "when provided config with new endpoint, uses provided endpoint" do
+      endpoint = "https://test.salesforce.com"
+      config = %{
+        password: "password",
+        security_token: "security_token",
+        username: "forcex@example.com",
+        client_id: "big_ol_id",
+        client_secret: "sssshhhhhhhh",
+        endpoint: endpoint
+      }
+
+      response = %{
+        access_token: "access_token",
+        id: "https://login.salesforce.com/id/org_id/005d0000001Jb9tAAC",
+        instance_url: "https://forcex.my.salesforce.com",
+        issued_at: "1520973086810",
+        signature: "oo7i3klbG6OjXlMFQSBzFaNYCP9pnWZ98f6Kdu/Th2Q=",
+        token_type: "Bearer"
+      }
+
+      Forcex.Api.MockHttp
+      |> expect(:raw_request, fn :post, url, _, _, _ ->
+          assert String.starts_with?(url, endpoint) == true
+          response
+          end)
+
+      Forcex.Client.login(config)
     end
   end
 
