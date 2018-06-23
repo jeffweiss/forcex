@@ -13,7 +13,7 @@ defmodule Forcex do
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    @api.raw_request(method, url, Poison.encode!(body), headers, options)
+    @api.raw_request(method, url, format_body(body), headers, options)
   end
 
   @spec post(String.t, map | String.t, client) :: response
@@ -113,4 +113,7 @@ defmodule Forcex do
   defp service_endpoint(%Forcex.Client{services: services}, service) do
     Map.get(services, service)
   end
+
+  defp format_body(""), do: ""
+  defp format_body(body), do: Poison.encode!(body)
 end
