@@ -141,7 +141,7 @@ Tests can be run automatically when files change with
 Tests mock the api calls to the Salesforce API using Mox to set expectations on
 `Forcex.Api.MockHttp.raw_request`.  To know what to put in a mock response just
 run the client in `iex` and look for the debug logging response from http.ex.
-Make sure not to scrub any responses for sensitive data before including them
+Make sure to scrub any responses for sensitive data before including them
 in a commit.
 
 Example assuming environment variables are in place with login info
