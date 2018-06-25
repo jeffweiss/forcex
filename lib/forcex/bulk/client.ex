@@ -41,15 +41,15 @@ defmodule Forcex.Bulk.Client do
   end
   def login(conf, starting_struct) do
     envelope = """
-<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
-  <env:Body>
-    <n1:login xmlns:n1="urn:partner.soap.sforce.com">
-      <n1:username>#{conf.username}</n1:username>
-      <n1:password>#{conf.password}#{conf.security_token}</n1:password>
-    </n1:login>
-  </env:Body>
-</env:Envelope>
+    <?xml version="1.0" encoding="utf-8" ?>
+    <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+      <env:Body>
+        <n1:login xmlns:n1="urn:partner.soap.sforce.com">
+          <n1:username>#{conf.username}</n1:username>
+          <n1:password>#{conf.password}#{conf.security_token}</n1:password>
+        </n1:login>
+      </env:Body>
+    </env:Envelope>
     """
     headers = [
       {"Content-Type", "text/xml; charset=UTF-8"},
