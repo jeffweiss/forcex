@@ -19,13 +19,15 @@ defmodule Forcex do
   @spec post(String.t, map | String.t, client) :: response
   def post(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, client.authorization_header, [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:post, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec patch(String.t, String.t, client) :: response
   def patch(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:patch, url, body, client.authorization_header, [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:patch, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec delete(String.t, client) :: response
@@ -89,6 +91,12 @@ defmodule Forcex do
 
     "#{base}/#{sobject}/describe/"
     |> get("", [{"If-Modified-Since", since}], client)
+  end
+
+  @spec composite_query(map, client) :: response
+  def composite_query(body, %Forcex.Client{} = client) do
+    service_endpoint(client, :composite)
+    |> post(body, client)
   end
 
   @spec query(String.t, client) :: response
