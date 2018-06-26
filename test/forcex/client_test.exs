@@ -39,14 +39,14 @@ defmodule Forcex.ClientTest do
         username: "<<probablynotvalid>>@example.com"
       }
 
-      encoded_config = for {key, val} <- config, into: %{}, do: {key, HtmlEntities.encode(val)}
+      _encoded_config = for {key, val} <- config, into: %{}, do: {key, HtmlEntities.encode(val)}
 
       expected_body = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<env:Envelope xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<env:Body>\n<n1:login xmlns:n1=\"urn:partner.soap.sforce.com\">\n  <n1:username>&lt;&lt;probablynotvalid&gt;&gt;@example.com</n1:username>\n  <n1:password>amper&amp;andflash!</n1:password>\n</n1:login>\n</env:Body>\n</env:Envelope>\n"
 
       Forcex.Api.MockHttp
       |> expect(:raw_request, fn :post, _, ^expected_body, _, _ -> @response end)
 
-      client = Forcex.Client.login(config)
+      _client = Forcex.Client.login(config)
     end
   end
 
