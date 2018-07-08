@@ -13,19 +13,21 @@ defmodule Forcex do
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    @api.raw_request(method, url, Poison.encode!(body), headers, options)
+    @api.raw_request(method, url, format_body(body), headers, options)
   end
 
   @spec post(String.t, map | String.t, client) :: response
   def post(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, client.authorization_header, [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:post, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec patch(String.t, String.t, client) :: response
   def patch(path, body \\ "", client) do
     url = client.endpoint <> path
-    json_request(:patch, url, body, client.authorization_header, [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:patch, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec delete(String.t, client) :: response
@@ -91,6 +93,12 @@ defmodule Forcex do
     |> get("", [{"If-Modified-Since", since}], client)
   end
 
+  @spec composite_query(map, client) :: response
+  def composite_query(body, %Forcex.Client{} = client) do
+    service_endpoint(client, :composite)
+    |> post(body, client)
+  end
+
   @spec query(String.t, client) :: response
   def query(query, %Forcex.Client{} = client) do
     base = service_endpoint(client, :query)
@@ -113,4 +121,7 @@ defmodule Forcex do
   defp service_endpoint(%Forcex.Client{services: services}, service) do
     Map.get(services, service)
   end
+
+  defp format_body(""), do: ""
+  defp format_body(body), do: Poison.encode!(body)
 end
