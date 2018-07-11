@@ -1,5 +1,5 @@
 defmodule Forcex.Bulk.Client do
-  defstruct session_id: nil, api_version: "41.0", endpoint: "https://login.salesforce.com", host: nil
+  defstruct session_id: nil, api_version: "43.0", endpoint: "https://login.salesforce.com", host: nil
 
   require Logger
 

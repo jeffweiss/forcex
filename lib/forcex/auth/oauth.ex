@@ -15,6 +15,7 @@ defmodule Forcex.Auth.OAuth do
     "/services/oauth2/token?#{URI.encode_query(login_payload)}"
     |> Forcex.post(starting_struct)
     |> handle_login_response
+    |> maybe_add_api_version(starting_struct)
   end
 
   defp handle_login_response(%{
@@ -36,6 +37,13 @@ defmodule Forcex.Auth.OAuth do
     )
 
     %{}
+  end
+
+  defp maybe_add_api_version(client_map, %{api_version: api_version}) do
+    Map.put(client_map, :api_version, api_version)
+  end
+  defp maybe_add_api_version(client_map, _) do
+    client_map
   end
 
   @spec authorization_header(token :: String.t(), type :: String.t()) :: list
