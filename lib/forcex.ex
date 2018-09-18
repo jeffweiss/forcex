@@ -6,7 +6,7 @@ defmodule Forcex do
   require Logger
 
   @type client :: map
-  @type response :: map | {number, any}
+  @type response :: map | {number, any} | String.t
   @type method :: :get | :put | :post | :patch | :delete
 
   @api Application.get_env(:forcex, :api) || Forcex.Api.Http

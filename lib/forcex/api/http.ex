@@ -12,7 +12,7 @@ defmodule Forcex.Api.Http do
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
   @type method :: :get | :put | :post | :patch | :delete
-  @type response :: map | {number, any}
+  @type response :: map | {number, any} | String.t
 
   def raw_request(method, url, body, headers, options) do
     response = method |> request!(url, body, headers, extra_options() ++ options) |> process_response
