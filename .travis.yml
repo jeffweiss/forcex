@@ -1,12 +1,16 @@
 language: elixir
 elixir:
-  - 1.5.2
+  - '1.6.6'
+otp_release:
+  - '20.0'
+matrix:
+  include:
+    - elixir: '1.7.3'
+      otp_release: '21.0'
 notifications:
   recipients:
     - travis@jeffweiss.org
     - matt@mattrobinson.net
-otp_release:
-  - 20.0
 env:
   - MIX_ENV=test
 cache:
