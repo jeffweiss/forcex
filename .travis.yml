@@ -10,4 +10,5 @@ otp_release:
 env:
   - MIX_ENV=test
 script:
-  - "mix do deps.get, compile, test"
+  - "mix do deps.get, deps.compile, compile, test"
+  - "mix dialyzer --halt-exit-status --format term"
