@@ -16,11 +16,11 @@ defmodule Forcex.Mixfile do
       # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
-        "coveralls": :test,
+        coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.html": :test,
         "coveralls.post": :test,
-        "docs": :dev,
+        docs: :dev,
         "hex.docs": :dev,
       ],
       dialyzer: [
