@@ -12,7 +12,7 @@ defmodule Forcex.Api.Http do
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
   @type method :: :get | :put | :post | :patch | :delete
-  @type response :: map | {number, any}
+  @type response :: map | {number, any} | String.t
 
   def raw_request(method, url, body, headers, options) do
     response = method |> request!(url, body, headers, extra_options() ++ options) |> process_response
@@ -46,9 +46,8 @@ defmodule Forcex.Api.Http do
   defp process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
   defp process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
-  @spec process_request_headers(list({String.t, String.t})) :: list({String.t, String.t})
-  defp process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
+  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
   @spec process_headers(list({String.t, String.t})) :: map
-  defp process_headers(headers), do: Map.new(headers)
+  def process_headers(headers), do: Map.new(headers)
 end

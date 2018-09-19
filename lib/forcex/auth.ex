@@ -3,5 +3,5 @@ defmodule Forcex.Auth do
     Auth behavior
   """
 
-  @callback login(config :: Map.t(), struct) :: Map.t()
+  @callback login(config :: map(), struct) :: map()
 end

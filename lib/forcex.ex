@@ -6,7 +6,7 @@ defmodule Forcex do
   require Logger
 
   @type client :: map
-  @type response :: map | {number, any}
+  @type response :: map | {number, any} | String.t
   @type method :: :get | :put | :post | :patch | :delete
 
   @api Application.get_env(:forcex, :api) || Forcex.Api.Http
@@ -79,7 +79,7 @@ defmodule Forcex do
   end
 
   def attachment_body(binary_path, %Forcex.Client{} = client) do
-    base = service_endpoint(client, "sobjects")
+    base = service_endpoint(client, :sobjects)
 
     "#{base}/Attachment/#{binary_path}/Body"
     |> get(client)
@@ -117,7 +117,7 @@ defmodule Forcex do
     |> get(client)
   end
 
-  @spec service_endpoint(client, String.t) :: String.t
+  @spec service_endpoint(client, atom) :: String.t
   defp service_endpoint(%Forcex.Client{services: services}, service) do
     Map.get(services, service)
   end
