@@ -6,48 +6,48 @@ defmodule Forcex do
   require Logger
 
   @type client :: map
-  @type response :: map | {number, any} | String.t
+  @type forcex_response :: map | {number, any} | String.t
   @type method :: :get | :put | :post | :patch | :delete
 
   @api Application.get_env(:forcex, :api) || Forcex.Api.Http
 
-  @spec json_request(method, String.t, map | String.t, list, list) :: response
+  @spec json_request(method, String.t, map | String.t, list, list) :: forcex_response
   def json_request(method, url, body, headers, options) do
     @api.raw_request(method, url, format_body(body), headers, options)
   end
 
-  @spec post(String.t, map | String.t, client) :: response
+  @spec post(String.t, map | String.t, client) :: forcex_response
   def post(path, body \\ "", client) do
     url = client.endpoint <> path
     headers = [{"Content-Type", "application/json"}]
     json_request(:post, url, body, headers ++ client.authorization_header, [])
   end
 
-  @spec patch(String.t, String.t, client) :: response
+  @spec patch(String.t, String.t, client) :: forcex_response
   def patch(path, body \\ "", client) do
     url = client.endpoint <> path
     headers = [{"Content-Type", "application/json"}]
     json_request(:patch, url, body, headers ++ client.authorization_header, [])
   end
 
-  @spec delete(String.t, client) :: response
+  @spec delete(String.t, client) :: forcex_response
   def delete(path, client) do
     url = client.endpoint <> path
     @api.raw_request(:delete, url, "", client.authorization_header, [])
   end
 
-  @spec get(String.t, map | String.t, list, client) :: response
+  @spec get(String.t, map | String.t, list, client) :: forcex_response
   def get(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
     json_request(:get, url, body, headers ++ client.authorization_header, [])
   end
 
-  @spec versions(client) :: response
+  @spec versions(client) :: forcex_response
   def versions(%Forcex.Client{} = client) do
     get("/services/data", client)
   end
 
-  @spec services(client) :: response
+  @spec services(client) :: forcex_response
   def services(%Forcex.Client{} = client) do
     get("/services/data/v#{client.api_version}", client)
   end
@@ -62,7 +62,7 @@ defmodule Forcex do
   ]
 
   for {function, service} <- @basic_services do
-    @spec unquote(function)(client) :: response
+    @spec unquote(function)(client) :: forcex_response
     def unquote(function)(%Forcex.Client{} = client) do
       client
       |> service_endpoint(unquote(service))
@@ -70,7 +70,7 @@ defmodule Forcex do
     end
   end
 
-  @spec describe_sobject(String.t, client) :: response
+  @spec describe_sobject(String.t, client) :: forcex_response
   def describe_sobject(sobject, %Forcex.Client{} = client) do
     base = service_endpoint(client, :sobjects)
 
@@ -85,7 +85,7 @@ defmodule Forcex do
     |> get(client)
   end
 
-  @spec metadata_changes_since(String.t, String.t, client) :: response
+  @spec metadata_changes_since(String.t, String.t, client) :: forcex_response
   def metadata_changes_since(sobject, since, client) do
     base = service_endpoint(client, :sobjects)
 
@@ -93,13 +93,13 @@ defmodule Forcex do
     |> get("", [{"If-Modified-Since", since}], client)
   end
 
-  @spec composite_query(map, client) :: response
+  @spec composite_query(map, client) :: forcex_response
   def composite_query(body, %Forcex.Client{} = client) do
     service_endpoint(client, :composite)
     |> post(body, client)
   end
 
-  @spec query(String.t, client) :: response
+  @spec query(String.t, client) :: forcex_response
   def query(query, %Forcex.Client{} = client) do
     base = service_endpoint(client, :query)
     params = %{"q" => query} |> URI.encode_query
@@ -108,7 +108,7 @@ defmodule Forcex do
     |> get(client)
   end
 
-  @spec query_all(String.t, client) :: response
+  @spec query_all(String.t, client) :: forcex_response
   def query_all(query, %Forcex.Client{} = client) do
     base = service_endpoint(client, :queryAll)
     params = %{"q" => query} |> URI.encode_query
