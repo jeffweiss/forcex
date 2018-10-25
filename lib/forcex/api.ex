@@ -4,7 +4,7 @@ defmodule Forcex.Api do
   """
 
   @type method :: :get | :put | :post | :patch | :delete
-  @type response :: map | {number, any} | String.t
+  @type forcex_response :: map | {number, any} | String.t
 
-  @callback raw_request(method, String.t, map | String.t, list, list) :: response
+  @callback raw_request(method, String.t, map | String.t, list, list) :: forcex_response
 end
