@@ -15,7 +15,7 @@ defmodule Forcex.Api.Http do
   @type forcex_response :: map | {number, any} | String.t
 
   def raw_request(method, url, body, headers, options) do
-    response = method |> request!(url, body, headers, extra_options() ++ options) |> process_response
+    response = method |> request!(url, body, headers, extra_options() ++ options)
     Logger.debug("#{__ENV__.module}.#{elem(__ENV__.function, 0)} response=" <> inspect(response))
     response
   end
