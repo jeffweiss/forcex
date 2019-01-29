@@ -1,7 +1,18 @@
 defmodule Forcex.Client do
-  defstruct access_token: nil, api_version: "36.0", token_type: nil, endpoint: "https://login.salesforce.com", services: %{}
-
   require Logger
+
+  @default_endpoint "https://login.salesforce.com"
+
+  defstruct api_version: "41.0",
+            authorization_header: [],
+            endpoint: @default_endpoint,
+            services: %{}
+
+  @moduledoc """
+  This client delegates login to the appropriate endpoint depending on the
+  type of credentials you have, and upon successful authentication keeps track
+  of the authentication headers you'll need for subsequent calls.
+  """
 
   @doc """
   Initially signs into Force.com API.
@@ -20,6 +31,7 @@ defmodule Forcex.Client do
         client_id: "...",
         client_secret: "...",
         debug: true
+        endpoint: "..."
       }
 
   Environment variables
@@ -29,6 +41,7 @@ defmodule Forcex.Client do
     - `SALESFORCE_CLIENT_ID`
     - `SALESFORCE_CLIENT_SECRET`
     - `SALESFORCE_DEBUG`
+    - `SALESFORCE_ENDPOINT`
 
   Application configuration
 
@@ -39,6 +52,11 @@ defmodule Forcex.Client do
         client_id: "CONNECTED_APP_OAUTH_CLIENT_ID",
         client_secret: "CONNECTED_APP_OAUTH_CLIENT_SECRET",
         debug: true
+        endpoint: "login.salesforce.com"
+
+  If no `client_id` is passed login via session id will be attempted with
+  `security_token`.
+>>>>>>> ac97cb5a9671063728bb12d443ba1cfbee072d77
 
   Will require additional call to `locate_services/1` to identify which Force.com
   services are availabe for your deployment.
@@ -47,36 +65,29 @@ defmodule Forcex.Client do
         Forcex.Client.login
         |> Forcex.Client.locate_services
   """
-  def login(c \\ default_config()) do
-    login(c, %__MODULE__{})
+  def login(config \\ default_config()) do
+    login(config, %__MODULE__{endpoint: config[:endpoint] || @default_endpoint})
   end
 
   def login(conf, starting_struct) do
-    login_payload =
-      conf
-      |> Map.put(:password, "#{conf.password}#{conf.security_token}")
-      |> Map.put(:grant_type, "password")
-    Forcex.post("/services/oauth2/token?#{URI.encode_query(login_payload)}", starting_struct)
-    |> handle_login_response
+    Logger.debug("conf=" <> inspect(conf))
+    case conf do
+      %{client_id: _} -> struct(__MODULE__, Forcex.Auth.OAuth.login(conf, starting_struct))
+      %{security_token: _} -> struct(__MODULE__, Forcex.Auth.SessionId.login(conf, starting_struct))
+    end
   end
 
   def locate_services(client) do
     services = Forcex.services(client)
-    %{client | services: services}
-    |> debug
-  end
-
-  defp handle_login_response(%{access_token: token, token_type: token_type, instance_url: endpoint}) do
-    %__MODULE__{access_token: token, token_type: token_type, endpoint: endpoint}
-  end
-  defp handle_login_response({status_code, error_message}) do
-    Logger.warn "Cannot log into SFDC API. Please ensure you have Forcex properly configured. Got error code #{status_code} and message #{inspect error_message}"
-    %__MODULE__{}
+    client = %{client | services: services}
+    Logger.debug(inspect(client))
+    client
   end
 
   def default_config() do
-    [:username, :password, :security_token, :client_id, :client_secret]
-    |> Enum.map(&( {&1, get_val_from_env(&1)}))
+    [:username, :password, :security_token, :client_id, :client_secret, :endpoint]
+    |> Enum.map(&({&1, get_val_from_env(&1)}))
+    |> Enum.filter(fn {_, v} -> v end)
     |> Enum.into(%{})
   end
 

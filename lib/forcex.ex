@@ -1,79 +1,45 @@
 defmodule Forcex do
-  use HTTPoison.Base
-  require Logger
+  @moduledoc """
+  The main module for interacting with Salesforce
+  """
 
-  @user_agent [{"User-agent", "forcex"}]
-  @accept [{"Accept", "application/json"}]
-  @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
+  require Logger
 
   @type client :: map
   @type response :: map | {number, any}
   @type method :: :get | :put | :post | :patch | :delete
 
-  @spec process_request_headers(list({String.t, String.t})) :: list({String.t, String.t})
-  def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
-
-  @spec process_headers(list({String.t, String.t})) :: map
-  def process_headers(headers), do: Map.new(headers)
-
-  @spec process_response(HTTPoison.Response.t) :: response
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
-    %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
-    |> process_response
-  end
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "deflate"} = headers } = resp) do
-    zstream = :zlib.open
-    :ok = :zlib.inflateInit(zstream, -15)
-    uncompressed_data = :zlib.inflate(zstream, body) |> Enum.join
-    :zlib.inflateEnd(zstream)
-    :zlib.close(zstream)
-    %{resp | body: uncompressed_data, headers: Map.drop(headers, ["Content-Encoding"])}
-    |> process_response
-  end
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-    %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
-    |> process_response
-  end
-  def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
-  def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
-
-  @spec extra_options :: list
-  defp extra_options() do
-    Application.get_env(:forcex, :request_options, [])
-  end
+  @api Application.get_env(:forcex, :api) || Forcex.Api.Http
 
   @spec json_request(method, String.t, map | String.t, list, list) :: response
   def json_request(method, url, body, headers, options) do
-    raw_request(method, url, Poison.encode!(body), headers, options)
-  end
-
-  @spec raw_request(method, String.t, map | String.t, list, list) :: response
-  def raw_request(method, url, body, headers, options) do
-    request!(method, url, body, headers, extra_options() ++ options) |> process_response
+    @api.raw_request(method, url, format_body(body), headers, options)
   end
 
   @spec post(String.t, map | String.t, list, client) :: response
   def post(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:post, url, body, headers ++ authorization_header(client), [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:post, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec patch(String.t, String.t, list, client) :: response
   def patch(path, body \\ "", headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:patch, url, body, headers ++ authorization_header(client), [])
+    headers = [{"Content-Type", "application/json"}]
+    json_request(:patch, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec delete(String.t, list, client) :: response
   def delete(path, headers \\ [], client) do
     url = client.endpoint <> path
-    raw_request(:delete, url, "", headers ++ authorization_header(client), [])
+    @api.raw_request(:delete, url, "", client.authorization_header, [])
   end
 
   @spec get(String.t, list, client) :: response
   def get(path, headers \\ [], client) do
     url = client.endpoint <> path
-    json_request(:get, url, "", headers ++ authorization_header(client), [])
+    json_request(:get, url, body, headers ++ client.authorization_header, [])
   end
 
   @spec versions(client) :: response
@@ -127,6 +93,12 @@ defmodule Forcex do
     |> get([{"If-Modified-Since", since}], client)
   end
 
+  @spec composite_query(map, client) :: response
+  def composite_query(body, %Forcex.Client{} = client) do
+    service_endpoint(client, :composite)
+    |> post(body, client)
+  end
+
   @spec query(String.t, client) :: response
   def query(query, %Forcex.Client{} = client) do
     base = service_endpoint(client, :query)
@@ -150,9 +122,6 @@ defmodule Forcex do
     Map.get(services, service)
   end
 
-  @spec authorization_header(client) :: list
-  defp authorization_header(%{access_token: nil}), do: []
-  defp authorization_header(%{access_token: token, token_type: type}) do
-    [{"Authorization", type <> " " <> token}]
-  end
+  defp format_body(""), do: ""
+  defp format_body(body), do: Poison.encode!(body)
 end

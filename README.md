@@ -126,6 +126,42 @@ Forcex.Client.default_config
 |> Forcex.Client.login(%Forcex.Client{endpoint: "https://test.salesforce.com", api_version: "34.0"})
 ```
 
+## Testing
+
+Make sure dependencies are installed
+
+    mix deps.get
+
+Tests can be run with
+
+    mix test
+
+Tests can be run automatically when files change with
+
+    mix test.watch --stale
+
+Tests mock the api calls to the Salesforce API using Mox to set expectations on
+`Forcex.Api.MockHttp.raw_request`.  To know what to put in a mock response just
+run the client in `iex` and look for the debug logging response from http.ex.
+Make sure to scrub any responses for sensitive data before including them
+in a commit.
+
+Example assuming environment variables are in place with login info
+
+    % iex -S mix
+    iex(1)> client = Forcex.Client.login |> Forcex.Client.locate_services
+    14:40:27.858 file=forcex/lib/forcex/api/http.ex line=19 [debug] Elixir.Forcex.Api.Http.raw_request response=%{access_token: "redacted",...
+    14:40:28.222 file=forcex/lib/forcex/api/http.ex line=19 [debug] Elixir.Forcex.Api.Http.raw_request response=%{process: "/services/data/v41.0/process", search...
+    iex(2)> Forcex.query("select Id, Name from Account order by CreatedDate desc", client)
+    14:43:05.896 file=forcex/lib/forcex/api/http.ex line=19 [debug] Elixir.Forcex.Api.Http.raw_request response=%{done: false, nextRecordsUrl: "/services/data/v4
+
+Just take the data after `response=` and throw it in a Mox expectation.  See
+existing tests for full examples
+
+    response = %{access_token: "redacted"}
+    Forcex.Api.MockHttp
+    |> expect(:raw_request, fn(:get, ^expected_url, _, ^auth_header, _) -> response end)
+
 
 ## Current State
 
