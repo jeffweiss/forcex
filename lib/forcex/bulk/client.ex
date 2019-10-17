@@ -55,7 +55,7 @@ defmodule Forcex.Bulk.Client do
       {"Content-Type", "text/xml; charset=UTF-8"},
       {"SOAPAction", "login"},
     ]
-    HTTPoison.post!("#{conf.endpoint}/services/Soap/u/#{starting_struct.api_version}", envelope, headers)
+    HTTPoison.post!("#{starting_struct.endpoint}/services/Soap/u/#{starting_struct.api_version}", envelope, headers)
     |> parse_login_response
   end
 
