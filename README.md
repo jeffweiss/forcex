@@ -108,7 +108,7 @@ client = Forcex.Client.login |> Forcex.Client.locate_services
 
 first_page = Forcex.query("select Id, Name from Account order by CreatedDate desc", client)
 
-second_page = first_page |> Map.get("nextRecordsUrl") |> Forcex.get(client)
+second_page = first_page |> Map.get(:nextRecordsUrl) |> Forcex.get(client)
 ```
 
 ## Further Configuration
