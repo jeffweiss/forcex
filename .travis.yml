@@ -1,10 +1,10 @@
 language: elixir
 elixir:
-  - 1.6
   - 1.7
+  - 1.13
 otp_release:
-  - 20.3
-  - 21.0
+  - 22.0
+  - 24.0
 notifications:
   recipients:
     - travis@jeffweiss.org
@@ -19,5 +19,8 @@ script:
   - mix do deps.get, deps.compile, compile
   - mix test
   - if [[ `elixir -v` = *"1.7"* ]]; then
+      travis_wait 30 mix dialyzer --halt-exit-status --format term;
+    fi
+  - if [[ `elixir -v` = *"1.13"* ]]; then
       travis_wait 30 mix dialyzer --halt-exit-status --format term;
     fi
