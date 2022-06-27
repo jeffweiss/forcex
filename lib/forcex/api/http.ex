@@ -24,7 +24,6 @@ defmodule Forcex.Api.Http do
     Application.get_env(:forcex, :request_options, [])
   end
 
-  @spec process_response(HTTPoison.Response.t) :: forcex_response
   def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers} = resp) do
     %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
     |> process_response
@@ -47,6 +46,5 @@ defmodule Forcex.Api.Http do
 
   def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
-  @spec process_headers(list({String.t, String.t})) :: map
   def process_headers(headers), do: Map.new(headers)
 end
