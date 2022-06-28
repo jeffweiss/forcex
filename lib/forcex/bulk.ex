@@ -16,14 +16,20 @@ defmodule Forcex.Bulk do
 
   def process_headers(headers), do: Map.new(headers)
 
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
-    %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
-    |> process_response()
+  def process_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
+    cond do
+      "gzip" = find_header(headers, "Content-Encoding") ->
+        %{resp | body: :zlib.gunzip(body), headers: List.delete(headers, {"Content-Encoding", "gzip"})}
+        |> process_response()
+
+      "application/json" <> suffix = find_header(headers, "Content-Type") ->
+        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
+        |> process_response()
+      true ->
+        resp
+    end
   end
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-    %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
-    |> process_response()
-  end
+
   def process_response(%HTTPoison.Response{body: body, status_code: status}) when status < 300 and status >= 200, do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
@@ -111,4 +117,12 @@ defmodule Forcex.Bulk do
     get("/job/#{job_id}/batch/#{batch_id}/result/#{id}", client)
   end
 
+  defp find_header(headers, header_name) do
+    Enum.find_value(
+      headers,
+      fn {name, value} ->
+        name =~ ~r/#{header_name}/i && String.downcase(value)
+      end
+    )
+  end
 end
