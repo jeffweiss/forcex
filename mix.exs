@@ -24,7 +24,6 @@ defmodule Forcex.Mixfile do
         "hex.docs": :dev,
       ],
       dialyzer: [
-        plt_add_deps: :transitive,
         ignore_warnings: ".dialyzer_ignore.exs",
         flags: [
           # "-Wunmatched_returns",
@@ -47,7 +46,7 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl, :html_entities]]
+    [extra_applications: [:logger, :ssl]]
   end
 
   # Dependencies can be Hex packages:
@@ -63,15 +62,15 @@ defmodule Forcex.Mixfile do
     [
       {:httpoison, "~> 0.13 or ~> 1.0"},
       {:exjsx, "< 5.0.0"},
-      {:poison, "~> 2.0 or ~> 3.1"},
+      {:poison, "~> 2.0 or ~> 3.1 or ~> 4.0"},
       {:timex, "~> 2.0 or ~> 3.0"},
       {:erlsom, "~> 1.4"},
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :dev},
       {:earmark, "~> 1.1", only: :dev, override: true},
-      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev, :test], runtime: false},
-      {:mox, "~> 0.3", only: :test},
-      {:mix_test_watch, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.0", only: :test},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:html_entities, "~> 0.4"}
     ]
   end

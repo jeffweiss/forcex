@@ -11,7 +11,6 @@ defmodule Forcex.Api.Http do
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
-  @type method :: :get | :put | :post | :patch | :delete
   @type forcex_response :: map | {number, any} | String.t
 
   def raw_request(method, url, body, headers, options) do
