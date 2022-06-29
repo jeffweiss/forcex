@@ -39,12 +39,8 @@ defmodule Forcex.Bulk.BatchWorker do
     seen_results = Keyword.get(state, :results, [])
 
     results = Forcex.Bulk.fetch_batch_result_status(batch, client)
-    case (results -- seen_results) do
-      list when is_list(list) ->
-        for result <- list do
-          notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
-        end
-      _ -> true
+    for result <- (results -- seen_results) do
+      notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
     end
 
     Keyword.put(state, :results, results)

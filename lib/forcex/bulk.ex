@@ -16,14 +16,20 @@ defmodule Forcex.Bulk do
 
   def process_headers(headers), do: Map.new(headers)
 
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
-    %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
-    |> process_response
+  def process_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
+    cond do
+      "gzip" = find_header(headers, "Content-Encoding") ->
+        %{resp | body: :zlib.gunzip(body), headers: List.delete(headers, {"Content-Encoding", "gzip"})}
+        |> process_response()
+
+      "application/json" <> suffix = find_header(headers, "Content-Type") ->
+        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
+        |> process_response()
+      true ->
+        resp
+    end
   end
-  def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-    %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
-    |> process_response
-  end
+
   def process_response(%HTTPoison.Response{body: body, status_code: status}) when status < 300 and status >= 200, do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
@@ -44,12 +50,12 @@ defmodule Forcex.Bulk do
     request!(method, url, body, headers, extra_options() ++ options) |> process_response
   end
 
-  def get(path, headers \\ [], client) do
+  def client_get(path, headers \\ [], client) do
     url = "https://#{client.host}/services/async/#{client.api_version}" <> path
     raw_request(:get, url, "", headers ++ authorization_header(client), [])
   end
 
-  def post(path, body \\ "", client) do
+  def client_post(path, body \\ "", client) do
     url = "https://#{client.host}/services/async/#{client.api_version}" <> path
     json_request(:post, url, body, authorization_header(client), [])
   end
@@ -57,7 +63,7 @@ defmodule Forcex.Bulk do
   @spec create_query_job(binary, map) :: job
   def create_query_job(sobject, client) do
     payload = %{"operation" => "query", "object" => sobject, "concurrencyMode" => "Parallel", "contentType" => "JSON"}
-    post("/job", payload, client)
+    client_post("/job", payload, client)
   end
 
   @spec close_job(job | id, map) :: job
@@ -65,13 +71,13 @@ defmodule Forcex.Bulk do
     close_job(job.id, client)
   end
   def close_job(id, client) when is_binary(id) do
-    post("/job/#{id}", %{"state" => "Closed"}, client)
+    client_post("/job/#{id}", %{"state" => "Closed"}, client)
   end
 
   @spec fetch_job_status(job | id, map) :: job
   def fetch_job_status(job, client) when is_map(job), do: fetch_job_status(job.id, client)
   def fetch_job_status(id, client) when is_binary(id) do
-    get("/job/#{id}", client)
+    client_get("/job/#{id}", client)
   end
 
   @spec create_query_batch(String.t, job | id, map) :: job
@@ -90,7 +96,7 @@ defmodule Forcex.Bulk do
     fetch_batch_status(id, job.id, client)
   end
   def fetch_batch_status(id, job_id, client) when is_binary(id) and is_binary(job_id) do
-    get("/job/#{job_id}/batch/#{id}", client)
+    client_get("/job/#{job_id}/batch/#{id}", client)
   end
 
   @spec fetch_batch_result_status(batch, map) :: list(String.t)
@@ -99,7 +105,7 @@ defmodule Forcex.Bulk do
   end
   @spec fetch_batch_result_status(id, id, map) :: list(String.t)
   def fetch_batch_result_status(batch_id, job_id, client)  when is_binary(batch_id) and is_binary(job_id) do
-    get("/job/#{job_id}/batch/#{batch_id}/result", client)
+    client_get("/job/#{job_id}/batch/#{batch_id}/result", client)
   end
 
   @spec fetch_results(id, batch, map) :: list(map)
@@ -108,7 +114,15 @@ defmodule Forcex.Bulk do
   end
   @spec fetch_results(id, id, id, map) :: list(map)
   def fetch_results(id, batch_id, job_id, client) when is_binary(id) and is_binary(batch_id) and is_binary(job_id) do
-    get("/job/#{job_id}/batch/#{batch_id}/result/#{id}", client)
+    client_get("/job/#{job_id}/batch/#{batch_id}/result/#{id}", client)
   end
 
+  defp find_header(headers, header_name) do
+    Enum.find_value(
+      headers,
+      fn {name, value} ->
+        name =~ ~r/#{header_name}/i && String.downcase(value)
+      end
+    )
+  end
 end
