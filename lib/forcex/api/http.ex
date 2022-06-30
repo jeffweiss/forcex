@@ -40,7 +40,7 @@ defmodule Forcex.Api.Http do
         |> process_response()
 
       "application/json" <> suffix = find_header(headers, "Content-Type") ->
-        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
+        %{resp | body: Jason.decode!(body), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
         |> process_response()
       true ->
         resp
