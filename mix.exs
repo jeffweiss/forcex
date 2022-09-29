@@ -7,6 +7,7 @@ defmodule Forcex.Mixfile do
 
   def project do
     [
+      aliases: aliases(),
       app: :forcex,
       version: "0.8.3",
       elixir: "~> 1.5",
@@ -79,5 +80,19 @@ defmodule Forcex.Mixfile do
     [maintainers: ["Jeff Weiss", "Matt Robinson"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/jeffweiss/forcex"}]
+  end
+
+  defp aliases do
+    [
+      check: [
+        "clean",
+        "deps.unlock --check-unused",
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "deps.unlock --check-unused",
+        "test --warnings-as-errors",
+        "credo"
+      ]
+    ]
   end
 end
