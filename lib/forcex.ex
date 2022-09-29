@@ -9,7 +9,7 @@ defmodule Forcex do
   @type forcex_response :: map | {number, any} | String.t
   @type method :: :get | :put | :post | :patch | :delete
 
-  @api Application.get_env(:forcex, :api) || Forcex.Api.Http
+  @api Application.compile_env(:forcex, :api)
 
   @spec json_request(method, String.t, map | String.t, list, list) :: forcex_response
   def json_request(method, url, body, headers, options) do

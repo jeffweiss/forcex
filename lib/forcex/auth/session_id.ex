@@ -5,7 +5,7 @@ defmodule Forcex.Auth.SessionId do
 
   require Logger
   @behaviour Forcex.Auth
-  @api Application.get_env(:forcex, :api) || Forcex.Api.Http
+  @api Application.get_env(:forcex, :api)
 
   def login(conf, starting_struct) do
     schema = "http://www.w3.org/2001/XMLSchema"
