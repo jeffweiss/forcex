@@ -1,0 +1,90 @@
+name: Release / Staging Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    uses: ./.github/workflows/elixir-build-and-test.yml
+  dialyzer:
+    uses: ./.github/workflows/elixir-dialyzer.yml
+  quality_checks:
+    uses: ./.github/workflows/elixir-quality-checks.yml
+  release:
+    name: Release
+    needs:
+      - build_and_test
+      - dialyzer
+      - quality_checks
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: prod
+    strategy:
+      matrix:
+        elixir: ["1.13.4", "1.14.0"]
+        otp: ["24.3.4.5", "25.1"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Elixir Project
+        uses: ./.github/actions/elixir-setup
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+          build-flags: --all-warnings --warnings-as-errors
+      - name: Prepare Release
+        id: prep_release
+        run: |
+          mix compile
+          mix phx.digest
+          mix release
+      - name: Login to ECR
+        id: ecr
+        uses: elgohr/ecr-login-action@v2
+        with:
+          access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+      - name: Publish Release
+        uses: elgohr/Publish-Docker-Github-Action@v4
+        with:
+          default_branch: main
+          name: sagedigital/datahub
+          username: ${{ steps.ecr.outputs.username }}
+          password: ${{ steps.ecr.outputs.password }}
+          registry: ${{ steps.ecr.outputs.registry }}
+          tags: "latest,${{ github.sha }}"
+  deploy:
+    name: Deploy to staging
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: run database migrations
+        uses: fastjames/amazon-ecs-deploy-task-definition@feat/run-task
+        with:
+          task-definition: ./priv/deploy/ecs_task_definitions/datahub-staging-migrate.json
+          cluster: datahub-staging
+          run-task: true
+          run-task-security-groups: sg-0d2df649f2623626b
+          run-task-subnets: subnet-02aa5f01201dae02e,subnet-0c3d5c63c96c76ea7
+      - name: Deploy container
+        uses: fastjames/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ./priv/deploy/ecs_task_definitions/datahub-staging-web.json
+          cluster: datahub-staging
+          service: datahub-staging-web-01
+          wait-for-service-stability: true
+          force-new-deployment: true
