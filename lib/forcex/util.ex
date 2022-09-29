@@ -1,4 +1,8 @@
 defmodule Forcex.Util do
+  @moduledoc """
+  Useful functions for use in multiple modules.
+  """
+
   import Kernel, except: [to_string: 1]
 
   @mapping '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'

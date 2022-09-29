@@ -33,10 +33,10 @@ jobs:
         # Check formatting even if there were unused deps so that
         # we give devs as much feedback as possible & save some time.
         if: always()
-      # - name: Run Credo
-      #   run: mix credo suggest --min-priority=normal
-      #   # Run Credo even if formatting or the unused deps check failed
-      #   if: always()
+      - name: Run Credo
+        run: mix credo suggest --min-priority=normal
+        # Run Credo even if formatting or the unused deps check failed
+        if: always()
       - name: Check for compile-time dependencies
         run: mix xref graph --label compile-connected --fail-above 0
         if: always()

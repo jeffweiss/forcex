@@ -1,3 +1,4 @@
+# credo:disable-for-this-file /Credo\.Check\.Refactor\./
 defmodule Mix.Tasks.Compile.Forcex do
   use Mix.Task
 
@@ -58,8 +59,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Describe](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm)
         """
         def describe(client) do
-          unquote(describe_url)
-          |> Forcex.get(client)
+          Forcex.get(unquote(describe_url), client)
         end
 
         @doc """
@@ -68,13 +68,11 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Basic Information](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_basic_info.htm)
         """
         def basic_info(client) do
-          unquote(sobject_url)
-          |> Forcex.get(client)
+          Forcex.get(unquote(sobject_url), client)
         end
 
         @doc """
         Create a new `#{unquote(name)}`
-
 
         Parameters
         * `sobject` - a map of key/value pairs
@@ -82,8 +80,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Basic Information](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_basic_info.htm)
         """
         def create(sobject, client) when is_map(sobject) do
-          unquote(sobject_url)
-          |> Forcex.post(sobject, client)
+          Forcex.post(unquote(sobject_url), sobject, client)
         end
 
         @doc """
@@ -142,8 +139,7 @@ defmodule Mix.Tasks.Compile.Forcex do
             when is_binary(start_date) and is_binary(end_date) do
           params = %{"start" => start_date, "end" => end_date} |> URI.encode_query()
 
-          (unquote(sobject_url) <> "/deleted?#{params}")
-          |> Forcex.get(client)
+          Forcex.get(unquote(sobject_url) <> "/deleted?#{params}", client)
         end
 
         def deleted_between(start_date, end_date, client) do
@@ -167,8 +163,7 @@ defmodule Mix.Tasks.Compile.Forcex do
             when is_binary(start_date) and is_binary(end_date) do
           params = %{"start" => start_date, "end" => end_date} |> URI.encode_query()
 
-          (unquote(sobject_url) <> "/updated?#{params}")
-          |> Forcex.get(client)
+          Forcex.get(unquote(sobject_url) <> "/updated?#{params}", client)
         end
 
         def updated_between(start_date, end_date, client) do
@@ -204,8 +199,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Rows by External ID](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_upsert.htm)
         """
         def by_external(field, value, client) do
-          (unquote(sobject_url) <> "/#{field}/#{value}")
-          |> Forcex.get(client)
+          Forcex.get(unquote(sobject_url) <> "/#{field}/#{value}", client)
         end
       end
 

@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk.JobWorker do
+  @moduledoc """
+  Handle bulk requests to Salesforce.
+  """
+
   use GenServer
   import Forcex.Bulk.Util
 
@@ -15,7 +19,7 @@ defmodule Forcex.Bulk.JobWorker do
     client = Keyword.fetch!(state, :client)
     sobject = Keyword.fetch!(state, :sobject)
     handlers = Keyword.get(state, :handlers, [])
-    interval = Keyword.get(state, :status_interval, 10000)
+    interval = Keyword.get(state, :status_interval, 10_000)
 
     job = Forcex.Bulk.create_query_job(sobject, client)
     notify_handlers({:job_created, job}, handlers)

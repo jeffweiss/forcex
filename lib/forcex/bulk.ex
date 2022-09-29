@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk do
+  @moduledoc """
+  Force.com Bulk Job interface
+  """
+
   use HTTPoison.Base
   require Logger
 

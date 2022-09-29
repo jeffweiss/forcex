@@ -1,4 +1,6 @@
 defmodule Forcex.Bulk.JobHandler do
+  @moduledoc false
+
   @callback handle_job_created(map, any) :: {:noreply, any}
   @callback handle_job_closed(map, any) :: {:noreply, any}
   @callback handle_job_all_batches_complete(map, any) :: {:noreply, any}

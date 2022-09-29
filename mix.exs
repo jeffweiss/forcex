@@ -17,6 +17,7 @@ defmodule Forcex.Mixfile do
       # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
+        check: :test,
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.html": :test,
@@ -61,15 +62,16 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:earmark, "~> 1.1", only: :dev, override: true},
+      {:excoveralls, "~> 0.5", only: :test},
       {:httpoison, "~> 0.13 or ~> 1.0"},
       {:exjsx, "< 5.0.0"},
       {:jason, "~> 1.4.0"},
       {:timex, "~> 2.0 or ~> 3.0"},
       {:erlsom, "~> 1.4"},
-      {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :dev},
-      {:earmark, "~> 1.1", only: :dev, override: true},
-      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:html_entities, "~> 0.4"}
