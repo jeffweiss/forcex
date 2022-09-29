@@ -28,11 +28,11 @@ jobs:
 
       - name: Check for unused deps
         run: mix deps.unlock --check-unused
-      # - name: Check code formatting
-      #   run: mix format --check-formatted
-      #   # Check formatting even if there were unused deps so that
-      #   # we give devs as much feedback as possible & save some time.
-      #   if: always()
+      - name: Check code formatting
+        run: mix format --check-formatted
+        # Check formatting even if there were unused deps so that
+        # we give devs as much feedback as possible & save some time.
+        if: always()
       # - name: Run Credo
       #   run: mix credo suggest --min-priority=normal
       #   # Run Credo even if formatting or the unused deps check failed

@@ -67,9 +67,13 @@ defmodule Forcex.Client do
 
   def login(conf, starting_struct) do
     Logger.debug("conf=" <> inspect(conf))
+
     case conf do
-      %{client_id: _} -> struct(__MODULE__, Forcex.Auth.OAuth.login(conf, starting_struct))
-      %{security_token: _} -> struct(__MODULE__, Forcex.Auth.SessionId.login(conf, starting_struct))
+      %{client_id: _} ->
+        struct(__MODULE__, Forcex.Auth.OAuth.login(conf, starting_struct))
+
+      %{security_token: _} ->
+        struct(__MODULE__, Forcex.Auth.SessionId.login(conf, starting_struct))
     end
   end
 
@@ -82,7 +86,7 @@ defmodule Forcex.Client do
 
   def default_config() do
     [:username, :password, :security_token, :client_id, :client_secret, :endpoint]
-    |> Enum.map(&({&1, get_val_from_env(&1)}))
+    |> Enum.map(&{&1, get_val_from_env(&1)})
     |> Enum.filter(fn {_, v} -> v end)
     |> Enum.into(%{})
   end
@@ -90,14 +94,16 @@ defmodule Forcex.Client do
   defp get_val_from_env(key) do
     key
     |> env_var
-    |> System.get_env
+    |> System.get_env()
     |> case do
       nil ->
         Application.get_env(:forcex, __MODULE__, [])
         |> Keyword.get(key)
-      val -> val
+
+      val ->
+        val
     end
   end
 
-  defp env_var(key), do: "SALESFORCE_#{key |> to_string |> String.upcase}"
+  defp env_var(key), do: "SALESFORCE_#{key |> to_string |> String.upcase()}"
 end

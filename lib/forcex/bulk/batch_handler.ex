@@ -11,19 +11,22 @@ defmodule Forcex.Bulk.BatchHandler do
       def handle_info({:batch_status, %{state: "Completed"} = batch}, state) do
         handle_batch_completed(batch, state)
       end
+
       def handle_info({:batch_status, %{state: "Failed"} = batch}, state) do
         handle_batch_failed(batch, state)
       end
+
       def handle_info({:batch_status, batch}, state) do
         handle_batch_status(batch, state)
       end
+
       def handle_info({:batch_created, batch}, state) do
         handle_batch_created(batch, state)
       end
+
       def handle_info({:batch_partial_result_ready, batch, result}, state) do
         handle_batch_partial_result_ready(batch, result, state)
       end
     end
   end
 end
-

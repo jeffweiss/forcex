@@ -11,10 +11,12 @@ defmodule Forcex.Api.Http do
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
-  @type forcex_response :: map | {number, any} | String.t
+  @type forcex_response :: map | {number, any} | String.t()
 
   def raw_request(method, url, body, headers, options) do
-    response = method |> request!(url, body, headers, extra_options() ++ options) |> process_response()
+    response =
+      method |> request!(url, body, headers, extra_options() ++ options) |> process_response()
+
     Logger.debug("#{__ENV__.module}.#{elem(__ENV__.function, 0)} response=" <> inspect(response))
     response
   end
@@ -27,25 +29,40 @@ defmodule Forcex.Api.Http do
   def process_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
     cond do
       "gzip" = find_header(headers, "Content-Encoding") ->
-        %{resp | body: :zlib.gunzip(body), headers: List.keydelete(headers, "Content-Encoding", 0)}
+        %{
+          resp
+          | body: :zlib.gunzip(body),
+            headers: List.keydelete(headers, "Content-Encoding", 0)
+        }
         |> process_response()
 
       "deflate" = find_header(headers, "Content-Encoding") ->
-        zstream = :zlib.open
+        zstream = :zlib.open()
         :ok = :zlib.inflateInit(zstream, -15)
-        uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join
+        uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join()
         :zlib.inflateEnd(zstream)
         :zlib.close(zstream)
-        %{resp | body: uncompressed_data, headers: List.delete(headers, {"Content-Encoding", "deflate"})}
+
+        %{
+          resp
+          | body: uncompressed_data,
+            headers: List.delete(headers, {"Content-Encoding", "deflate"})
+        }
         |> process_response()
 
       "application/json" <> suffix = find_header(headers, "Content-Type") ->
-        %{resp | body: Jason.decode!(body), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
+        %{
+          resp
+          | body: Jason.decode!(body),
+            headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})
+        }
         |> process_response()
+
       true ->
         resp
     end
   end
+
   def process_response(%HTTPoison.Response{body: body, status_code: 200}), do: body
   def process_response(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 

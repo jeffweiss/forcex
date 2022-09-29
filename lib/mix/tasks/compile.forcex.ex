@@ -6,11 +6,14 @@ defmodule Mix.Tasks.Compile.Forcex do
   def run(_) do
     {:ok, _} = Application.ensure_all_started(:forcex)
 
-    client = Forcex.Client.login
+    client = Forcex.Client.login()
 
     case client do
-      %{access_token: nil} -> IO.puts("Invalid configuration/credentials. Cannot generate SObjects.")
-      _ -> generate_modules(client)
+      %{access_token: nil} ->
+        IO.puts("Invalid configuration/credentials. Cannot generate SObjects.")
+
+      _ ->
+        generate_modules(client)
     end
 
     :ok
@@ -21,15 +24,14 @@ defmodule Mix.Tasks.Compile.Forcex do
 
     sobjects =
       client
-      |> Forcex.describe_global
+      |> Forcex.describe_global()
       |> Map.get(:sobjects)
 
     for sobject <- sobjects do
       sobject
       |> generate_module(client)
-      |> Code.compile_quoted
+      |> Code.compile_quoted()
     end
-
   end
 
   defp generate_module(sobject, client) do
@@ -136,16 +138,20 @@ defmodule Mix.Tasks.Compile.Forcex do
 
         See [SObject Get Deleted](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_getdeleted.htm)
         """
-        def deleted_between(start_date, end_date, client) when is_binary(start_date) and is_binary(end_date) do
-          params = %{"start" => start_date, "end" => end_date} |> URI.encode_query
-          unquote(sobject_url) <> "/deleted?#{params}"
+        def deleted_between(start_date, end_date, client)
+            when is_binary(start_date) and is_binary(end_date) do
+          params = %{"start" => start_date, "end" => end_date} |> URI.encode_query()
+
+          (unquote(sobject_url) <> "/deleted?#{params}")
           |> Forcex.get(client)
         end
+
         def deleted_between(start_date, end_date, client) do
           deleted_between(
             Timex.format!(start_date, "{ISO8601z}"),
             Timex.format!(end_date, "{ISO8601z}"),
-            client)
+            client
+          )
         end
 
         @doc """
@@ -157,16 +163,20 @@ defmodule Mix.Tasks.Compile.Forcex do
 
         See [SObject Get Updated](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_getupdated.htm)
         """
-        def updated_between(start_date, end_date, client) when is_binary(start_date) and is_binary(end_date) do
-          params = %{"start" => start_date, "end" => end_date} |> URI.encode_query
-          unquote(sobject_url) <> "/updated?#{params}"
+        def updated_between(start_date, end_date, client)
+            when is_binary(start_date) and is_binary(end_date) do
+          params = %{"start" => start_date, "end" => end_date} |> URI.encode_query()
+
+          (unquote(sobject_url) <> "/updated?#{params}")
           |> Forcex.get(client)
         end
+
         def updated_between(start_date, end_date, client) do
           updated_between(
             Timex.format!(start_date, "{ISO}"),
             Timex.format!(end_date, "{ISO}"),
-            client)
+            client
+          )
         end
 
         @doc """
@@ -179,7 +189,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Blob Retrieve](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_blob_retrieve.htm)
         """
         def get_blob(id, field, client) do
-          unquote(row_template_url) <> "/#{field}"
+          (unquote(row_template_url) <> "/#{field}")
           |> String.replace("{ID}", id)
           |> Forcex.get(client)
         end
@@ -194,27 +204,30 @@ defmodule Mix.Tasks.Compile.Forcex do
         See [SObject Rows by External ID](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_upsert.htm)
         """
         def by_external(field, value, client) do
-          unquote(sobject_url) <> "/#{field}/#{value}"
+          (unquote(sobject_url) <> "/#{field}/#{value}")
           |> Forcex.get(client)
         end
       end
-      IO.puts "Generated #{unquote(Module.concat(Forcex.SObject, name))}"
-    end
 
+      IO.puts("Generated #{unquote(Module.concat(Forcex.SObject, name))}")
+    end
   end
 
-  defp docs_for_field(%{name: name, type: type, label: label, picklistValues: values}) when type in [:picklist, :multipicklist] do
+  defp docs_for_field(%{name: name, type: type, label: label, picklistValues: values})
+       when type in [:picklist, :multipicklist] do
     """
     * `#{name}` - `#{type}`, #{label}
     #{for value <- values, do: docs_for_picklist_values(value)}
     """
   end
+
   defp docs_for_field(%{name: name, type: type, label: label}) do
     "* `#{name}` - `#{type}`, #{label}\n"
   end
 
   defp docs_for_picklist_values(%{value: value, active: true}) do
-"     * `#{value}`\n"
+    "     * `#{value}`\n"
   end
+
   defp docs_for_picklist_values(_), do: ""
 end

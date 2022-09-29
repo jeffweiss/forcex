@@ -3,10 +3,11 @@
 import Config
 
 config :forcex, :api, Forcex.Api.Http
+
 config :logger,
-  :console,
-  format: "\n$time $metadata[$level] $levelpad$message\n",
-  metadata: [:file, :line]
+       :console,
+       format: "\n$time $metadata[$level] $levelpad$message\n",
+       metadata: [:file, :line]
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
@@ -26,4 +27,4 @@ config :logger,
 # by uncommenting the line below and defining dev.exs, test.exs and such.
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"
