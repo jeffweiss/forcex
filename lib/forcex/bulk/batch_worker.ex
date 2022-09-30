@@ -1,6 +1,4 @@
 defmodule Forcex.Bulk.BatchWorker do
-  @moduledoc false
-
   use GenServer
   import Forcex.Bulk.Util
 
@@ -17,8 +15,8 @@ defmodule Forcex.Bulk.BatchWorker do
     client = Keyword.fetch!(state, :client)
     job = Keyword.fetch!(state, :job)
     query = Keyword.fetch!(state, :query)
-    handlers = Keyword.fetch!(state, :handlers)
-    interval = Keyword.get(state, :status_interval, 10_000)
+    handlers = Keyword.fetch!(state,:handlers)
+    interval = Keyword.get(state, :status_interval, 10000)
 
     batch = Forcex.Bulk.create_query_batch(query, job, client)
     notify_handlers({:batch_created, batch}, handlers)
@@ -41,9 +39,12 @@ defmodule Forcex.Bulk.BatchWorker do
     seen_results = Keyword.get(state, :results, [])
 
     results = Forcex.Bulk.fetch_batch_result_status(batch, client)
-
-    for result <- results -- seen_results do
-      notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
+    case (results -- seen_results) do
+      list when is_list(list) ->
+        for result <- list do
+          notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
+        end
+      _ -> true
     end
 
     Keyword.put(state, :results, results)
@@ -70,4 +71,5 @@ defmodule Forcex.Bulk.BatchWorker do
       _ -> {:noreply, state}
     end
   end
+
 end
