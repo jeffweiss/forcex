@@ -17,6 +17,7 @@ defmodule Forcex.Mixfile do
       # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
+        check: :test,
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.html": :test,
@@ -48,7 +49,9 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl, :html_entities]]
+    [
+      extra_applications: [:logger, :ssl]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -89,10 +92,10 @@ defmodule Forcex.Mixfile do
         "clean",
         "deps.unlock --check-unused",
         "compile --warnings-as-errors",
-        "format --check-formatted",
+        # "format --check-formatted",
         "deps.unlock --check-unused",
-        "test --warnings-as-errors",
-        "credo"
+        "test --warnings-as-errors"
+        # "credo"
       ]
     ]
   end
