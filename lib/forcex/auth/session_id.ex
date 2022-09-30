@@ -5,6 +5,7 @@ defmodule Forcex.Auth.SessionId do
 
   require Logger
   @behaviour Forcex.Auth
+  @api Application.compile_env(:forcex, :api)
 
   def login(conf, starting_struct) do
     schema = "http://www.w3.org/2001/XMLSchema"
@@ -34,9 +35,9 @@ defmodule Forcex.Auth.SessionId do
 
     url = starting_struct.endpoint <> "/services/Soap/u/#{starting_struct.api_version}"
 
-    Logger.debug("api=#{api_client()}")
+    Logger.debug("api=#{@api}")
 
-    api_client().raw_request(:post, url, body, headers, [])
+    @api.raw_request(:post, url, body, headers, [])
     |> handle_login_response
   end
 
@@ -73,6 +74,4 @@ defmodule Forcex.Auth.SessionId do
   def authorization_header(session_id) do
     [{"Authorization", "Bearer #{session_id}"}]
   end
-
-  defp api_client, do: Application.get_env(:forcex, :api)
 end
