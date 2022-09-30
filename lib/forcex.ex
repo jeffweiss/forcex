@@ -9,11 +9,9 @@ defmodule Forcex do
   @type forcex_response :: map | {number, any} | String.t()
   @type method :: :get | :put | :post | :patch | :delete
 
-  @api Application.compile_env(:forcex, :api)
-
   @spec json_request(method, String.t(), map | String.t(), list, list) :: forcex_response
   def json_request(method, url, body, headers, options) do
-    @api.raw_request(method, url, format_body(body), headers, options)
+    api_client().raw_request(method, url, format_body(body), headers, options)
   end
 
   @spec post(String.t(), map | String.t(), client) :: forcex_response
@@ -33,7 +31,7 @@ defmodule Forcex do
   @spec delete(String.t(), client) :: forcex_response
   def delete(path, client) do
     url = client.endpoint <> path
-    @api.raw_request(:delete, url, "", client.authorization_header, [])
+    api_client().raw_request(:delete, url, "", client.authorization_header, [])
   end
 
   @spec get(String.t(), map | String.t(), list, client) :: forcex_response
@@ -124,4 +122,6 @@ defmodule Forcex do
 
   defp format_body(""), do: ""
   defp format_body(body), do: Jason.encode!(body)
+
+  defp api_client, do: Application.get_env(:forcex, :api)
 end
