@@ -24,10 +24,12 @@ defmodule Forcex.ClientTest do
 
       client = Forcex.Client.login(config)
 
-      assert client.authorization_header == [{
-        "Authorization",
-        "Bearer #{@session_id}"
-      }]
+      assert client.authorization_header == [
+               {
+                 "Authorization",
+                 "Bearer #{@session_id}"
+               }
+             ]
 
       assert client.endpoint == "https://forcex.my.salesforce.com/"
     end
@@ -66,7 +68,6 @@ defmodule Forcex.ClientTest do
 
       response = %{
         access_token: access_token,
-
         id: "https://login.salesforce.com/id/#{org_id}/005d0000001Jb9tAAC",
         instance_url: "https://forcex.my.salesforce.com",
         issued_at: "1520973086810",
@@ -86,51 +87,60 @@ defmodule Forcex.ClientTest do
         api_version: "123.0"
       }
 
-      {:ok,
-       access_token: access_token,
-       config: config
-      }
+      {:ok, access_token: access_token, config: config}
     end
 
     test "sets the auth header and endpoint when successful", %{
-      config: config, access_token: access_token
+      config: config,
+      access_token: access_token
     } do
       client = Forcex.Client.login(config)
-      assert client.authorization_header == [{
-        "Authorization",
-        "Bearer #{access_token}"
-      }]
+
+      assert client.authorization_header == [
+               {
+                 "Authorization",
+                 "Bearer #{access_token}"
+               }
+             ]
+
       assert client.endpoint == "https://forcex.my.salesforce.com"
     end
 
     test "defaults the api_version if not specified in the starting_struct", %{
-      config: config, access_token: access_token
+      config: config,
+      access_token: access_token
     } do
       client = Forcex.Client.login(config)
 
-      assert client.authorization_header == [{
-        "Authorization",
-        "Bearer #{access_token}"
-      }]
+      assert client.authorization_header == [
+               {
+                 "Authorization",
+                 "Bearer #{access_token}"
+               }
+             ]
+
       assert client.api_version == "43.0"
     end
 
     test "allows overriding the api_version as specified in the starting_struct", %{
-      config: config, access_token: access_token
+      config: config,
+      access_token: access_token
     } do
       starting_struct = %Forcex.Client{api_version: "123.0"}
       client = Forcex.Client.login(config, starting_struct)
 
-      assert client.authorization_header == [{
-        "Authorization",
-        "Bearer #{access_token}"
-      }]
+      assert client.authorization_header == [
+               {
+                 "Authorization",
+                 "Bearer #{access_token}"
+               }
+             ]
+
       assert client.api_version == "123.0"
     end
   end
 
   describe "default login behavior" do
-
     test "default endpoint provided by client struct is login.salesforce.com" do
       initial_struct = %Forcex.Client{}
       assert initial_struct.endpoint == "https://login.salesforce.com"
@@ -162,15 +172,16 @@ defmodule Forcex.ClientTest do
 
       Forcex.Api.MockHttp
       |> expect(:raw_request, fn :post, url, _, _, _ ->
-          assert String.starts_with?(url, "https://login.salesforce.com") == true
-          response
-          end)
+        assert String.starts_with?(url, "https://login.salesforce.com") == true
+        response
+      end)
 
       Forcex.Client.login(config)
     end
 
     test "when provided config with new endpoint, uses provided endpoint" do
       endpoint = "https://test.salesforce.com"
+
       config = %{
         password: "password",
         security_token: "security_token",
@@ -191,9 +202,9 @@ defmodule Forcex.ClientTest do
 
       Forcex.Api.MockHttp
       |> expect(:raw_request, fn :post, url, _, _, _ ->
-          assert String.starts_with?(url, endpoint) == true
-          response
-          end)
+        assert String.starts_with?(url, endpoint) == true
+        response
+      end)
 
       Forcex.Client.login(config)
     end
@@ -203,7 +214,7 @@ defmodule Forcex.ClientTest do
     test "when successful sets servies on the client" do
       response = %{
         jobs: "/services/data/v43.0/jobs",
-        query: "/services/data/v43.0/query",
+        query: "/services/data/v43.0/query"
       }
 
       endpoint = "https://forcex.my.salesforce.com"
@@ -212,7 +223,7 @@ defmodule Forcex.ClientTest do
       services_url = endpoint <> "/services/data/v" <> api_version
 
       Forcex.Api.MockHttp
-      |> expect(:raw_request, fn(:get, ^services_url, _, ^auth_header, _) -> response end)
+      |> expect(:raw_request, fn :get, ^services_url, _, ^auth_header, _ -> response end)
 
       client = %Forcex.Client{
         endpoint: endpoint,
@@ -220,7 +231,7 @@ defmodule Forcex.ClientTest do
         api_version: api_version
       }
 
-      client = client |> Forcex.Client.locate_services
+      client = client |> Forcex.Client.locate_services()
       assert client.services == response
     end
   end

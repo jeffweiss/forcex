@@ -31,9 +31,7 @@ defmodule Forcex.Auth.OAuth do
 
   defp handle_login_response({status_code, error_message}) do
     Logger.warn(
-      "Cannot log into SFDC API. Please ensure you have Forcex properly configured. Got error code #{
-        status_code
-      } and message #{inspect(error_message)}"
+      "Cannot log into SFDC API. Please ensure you have Forcex properly configured. Got error code #{status_code} and message #{inspect(error_message)}"
     )
 
     %{}
@@ -42,6 +40,7 @@ defmodule Forcex.Auth.OAuth do
   defp maybe_add_api_version(client_map, %{api_version: api_version}) do
     Map.put(client_map, :api_version, api_version)
   end
+
   defp maybe_add_api_version(client_map, _) do
     client_map
   end
