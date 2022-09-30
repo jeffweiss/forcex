@@ -7,6 +7,7 @@ defmodule Forcex.Mixfile do
 
   def project do
     [
+      aliases: aliases(),
       app: :forcex,
       version: "0.8.3",
       elixir: "~> 1.5",
@@ -16,6 +17,7 @@ defmodule Forcex.Mixfile do
       # compilers: [:forcex] ++ Mix.compilers,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
+        check: :test,
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.html": :test,
@@ -47,7 +49,9 @@ defmodule Forcex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :erlsom, :exjsx, :ssl, :html_entities]]
+    [
+      extra_applications: [:logger, :ssl]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -61,7 +65,7 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:httpoison, "~> 0.13 or ~> 1.0"},
+      {:httpoison, "~> 1.0"},
       {:exjsx, "< 5.0.0"},
       {:poison, "~> 2.0 or ~> 3.1"},
       {:timex, "~> 2.0 or ~> 3.0"},
@@ -69,9 +73,9 @@ defmodule Forcex.Mixfile do
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :dev},
       {:earmark, "~> 1.1", only: :dev, override: true},
-      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev, :test], runtime: false},
-      {:mox, "~> 0.3", only: :test},
-      {:mix_test_watch, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.0", only: :test},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:html_entities, "~> 0.4"}
     ]
   end
@@ -80,5 +84,19 @@ defmodule Forcex.Mixfile do
     [maintainers: ["Jeff Weiss", "Matt Robinson"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/jeffweiss/forcex"}]
+  end
+
+  defp aliases do
+    [
+      check: [
+        "clean",
+        "deps.unlock --check-unused",
+        "compile --warnings-as-errors",
+        # "format --check-formatted",
+        "deps.unlock --check-unused",
+        "test --warnings-as-errors"
+        # "credo"
+      ]
+    ]
   end
 end
