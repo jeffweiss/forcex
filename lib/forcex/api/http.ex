@@ -39,8 +39,8 @@ defmodule Forcex.Api.Http do
         :zlib.close(zstream)
         %{resp | body: uncompressed_data, headers: List.delete(headers, {"Content-Encoding", "deflate"})}
         |> process_response()
-      "application/json" <> _ = find_header(headers, "Content-Type") ->
-        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json"})}
+      "application/json" <> suffix = find_header(headers, "Content-Type") ->
+        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
         |> process_response()
       true ->
         process_response_by_status(resp)

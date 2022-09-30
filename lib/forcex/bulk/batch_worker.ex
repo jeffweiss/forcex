@@ -44,7 +44,7 @@ defmodule Forcex.Bulk.BatchWorker do
         for result <- list do
           notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
         end
-      _ -> true
+      # _ -> true
     end
 
     Keyword.put(state, :results, results)
