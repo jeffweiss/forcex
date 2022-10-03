@@ -95,7 +95,7 @@ defmodule Forcex.Mixfile do
         "clean",
         "deps.unlock --check-unused",
         "compile --warnings-as-errors",
-        # "format --check-formatted",
+        "format --check-formatted",
         "deps.unlock --check-unused",
         "test --warnings-as-errors"
         # "credo"
