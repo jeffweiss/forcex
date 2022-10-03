@@ -28,14 +28,6 @@ defmodule Forcex.Bulk do
     end
   end
 
-  # def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Encoding" => "gzip"} = headers } = resp) do
-  #   %{resp | body: :zlib.gunzip(body), headers: Map.drop(headers, ["Content-Encoding"])}
-  #   |> process_response
-  # end
-  # def process_response(%HTTPoison.Response{body: body, headers: %{"Content-Type" => "application/json" <> _} = headers} = resp) do
-  #   %{resp | body: Poison.decode!(body, keys: :atoms), headers: Map.drop(headers, ["Content-Type"])}
-  #   |> process_response
-  # end
   defp process_response_by_status(%HTTPoison.Response{body: body, status_code: status}) when status < 300 and status >= 200, do: body
   defp process_response_by_status(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
 
