@@ -24,24 +24,37 @@ defmodule Forcex.Api.Http do
     Application.get_env(:forcex, :request_options, [])
   end
 
-  def process_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
-    cond do
-      "gzip" = find_header(headers, "Content-Encoding") ->
+  def process_response(%HTTPoison.Response{} = resp) do
+    resp
+    |> process_compressed_response()
+    |> process_json_response()
+    |> process_response_by_status()
+  end
+
+  defp process_compressed_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
+    case find_header(headers, "Content-Encoding") do
+      "gzip" ->
         %{resp | body: :zlib.gunzip(body), headers: List.delete(headers, {"Content-Encoding", "gzip"})}
-        |> process_response()
-      "deflate" = find_header(headers, "Content-Encoding") ->
+        |> process_compressed_response()
+      "deflate" ->
         zstream = :zlib.open
         :ok = :zlib.inflateInit(zstream, -15)
         uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join
         :zlib.inflateEnd(zstream)
         :zlib.close(zstream)
         %{resp | body: uncompressed_data, headers: List.delete(headers, {"Content-Encoding", "deflate"})}
-        |> process_response()
-      "application/json" <> suffix = find_header(headers, "Content-Type") ->
+        |> process_compressed_response()
+      _ ->
+        resp
+    end
+  end
+
+  defp process_json_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
+    case find_header(headers, "Content-Type") do
+      "application/json" <> suffix ->
         %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
-        |> process_response()
-      true ->
-        process_response_by_status(resp)
+      _ ->
+        resp
     end
   end
 
@@ -51,13 +64,11 @@ defmodule Forcex.Api.Http do
 
   def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
-  def process_headers(headers), do: Map.new(headers)
-
   defp find_header(headers, header_name) do
     Enum.find_value(
       headers,
       fn {name, value} ->
-        name =~ ~r/#{header_name}/i && String.downcase(value)
+        String.downcase(name) == String.downcase(header_name) && String.downcase(value)
       end
     )
   end

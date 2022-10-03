@@ -14,17 +14,37 @@ defmodule Forcex.Bulk do
 
   def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding ++ @content_type
 
-  def process_headers(headers), do: Map.new(headers)
+  def process_response(%HTTPoison.Response{} = resp) do
+    resp
+    |> process_compressed_response()
+    |> process_json_response()
+    |> process_response_by_status()
+  end
 
-  def process_response(%HTTPoison.Response{body: body, headers: headers } = resp) do
-    cond do
-      "gzip" = find_header(headers, "Content-Encoding") ->
+  defp process_compressed_response(%HTTPoison.Response{body: body, headers: headers } = resp) do
+    case find_header(headers, "Content-Encoding") do
+      "gzip" ->
         %{resp | body: :zlib.gunzip(body), headers: List.delete(headers, {"Content-Encoding", "gzip"})}
-        |> process_response()
-      "application/json" <> suffix = find_header(headers, "Content-Type") ->
+        |> process_compressed_response()
+      "deflate" ->
+        zstream = :zlib.open
+        :ok = :zlib.inflateInit(zstream, -15)
+        uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join
+        :zlib.inflateEnd(zstream)
+        :zlib.close(zstream)
+        %{resp | body: uncompressed_data, headers: List.delete(headers, {"Content-Encoding", "deflate"})}
+        |> process_compressed_response()
+      _ ->
+        resp
+    end
+  end
+
+  defp process_json_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
+    case find_header(headers, "Content-Type") do
+      "application/json" <> suffix ->
         %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
-        |> process_response()
-      true -> process_response_by_status(resp)
+      _ ->
+        resp
     end
   end
 
