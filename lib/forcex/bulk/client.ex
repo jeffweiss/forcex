@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk.Client do
+  @moduledoc """
+  Salesforce client for using the bulk API.
+  """
+
   defstruct session_id: nil,
             api_version: "43.0",
             endpoint: "https://login.salesforce.com",

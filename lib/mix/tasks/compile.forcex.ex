@@ -1,3 +1,4 @@
+# credo:disable-for-this-file /Credo\.Check\.Refactor\./
 defmodule Mix.Tasks.Compile.Forcex do
   use Mix.Task
 

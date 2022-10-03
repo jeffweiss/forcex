@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk do
+  @moduledoc """
+  HTTP communication with the Salesforce Bulk API
+  """
+
   use HTTPoison.Base
   require Logger
 
