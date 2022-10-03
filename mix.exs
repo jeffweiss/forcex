@@ -35,7 +35,8 @@ defmodule Forcex.Mixfile do
           # "-Wunknown",
           # "-Woverspecs",
           # "-Wspecdiffs",
-        ]
+        ],
+        plt_add_apps: [:mix]
       ],
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env)
@@ -65,6 +66,7 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
+      {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
       {:httpoison, "~> 1.0"},
       {:exjsx, "< 5.0.0"},
       {:poison, "~> 2.0 or ~> 3.1"},
@@ -73,7 +75,6 @@ defmodule Forcex.Mixfile do
       {:excoveralls, "~> 0.5", only: :test},
       {:ex_doc, "~> 0.11", only: :dev},
       {:earmark, "~> 1.1", only: :dev, override: true},
-      {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:html_entities, "~> 0.4"}
