@@ -11,7 +11,7 @@ defmodule Forcex.Api.Http do
   @accept [{"Accept", "application/json"}]
   @accept_encoding [{"Accept-Encoding", "gzip,deflate"}]
 
-  @type forcex_response :: map | {number, any} | String.t
+  @type forcex_response :: map | {number, any} | String.t()
 
   def raw_request(method, url, body, headers, options) do
     response = request!(method, url, body, headers, extra_options() ++ options)
@@ -34,16 +34,27 @@ defmodule Forcex.Api.Http do
   defp process_compressed_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
     case find_header(headers, "Content-Encoding") do
       "gzip" ->
-        %{resp | body: :zlib.gunzip(body), headers: List.delete(headers, {"Content-Encoding", "gzip"})}
+        %{
+          resp
+          | body: :zlib.gunzip(body),
+            headers: List.delete(headers, {"Content-Encoding", "gzip"})
+        }
         |> process_compressed_response()
+
       "deflate" ->
-        zstream = :zlib.open
+        zstream = :zlib.open()
         :ok = :zlib.inflateInit(zstream, -15)
-        uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join
+        uncompressed_data = zstream |> :zlib.inflate(body) |> Enum.join()
         :zlib.inflateEnd(zstream)
         :zlib.close(zstream)
-        %{resp | body: uncompressed_data, headers: List.delete(headers, {"Content-Encoding", "deflate"})}
+
+        %{
+          resp
+          | body: uncompressed_data,
+            headers: List.delete(headers, {"Content-Encoding", "deflate"})
+        }
         |> process_compressed_response()
+
       _ ->
         resp
     end
@@ -52,7 +63,12 @@ defmodule Forcex.Api.Http do
   defp process_json_response(%HTTPoison.Response{body: body, headers: headers} = resp) do
     case find_header(headers, "Content-Type") do
       "application/json" <> suffix ->
-        %{resp | body: Poison.decode!(body, keys: :atoms), headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})}
+        %{
+          resp
+          | body: Poison.decode!(body, keys: :atoms),
+            headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})
+        }
+
       _ ->
         resp
     end
@@ -60,7 +76,8 @@ defmodule Forcex.Api.Http do
 
   defp process_response_by_status(%HTTPoison.Response{body: body, status_code: 200}), do: body
 
-  defp process_response_by_status(%HTTPoison.Response{body: body, status_code: status}), do: {status, body}
+  defp process_response_by_status(%HTTPoison.Response{body: body, status_code: status}),
+    do: {status, body}
 
   def process_request_headers(headers), do: headers ++ @user_agent ++ @accept ++ @accept_encoding
 
