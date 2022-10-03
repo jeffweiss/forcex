@@ -123,5 +123,5 @@ defmodule Forcex do
   end
 
   defp format_body(""), do: ""
-  defp format_body(body), do: Poison.encode!(body)
+  defp format_body(body), do: Jason.encode!(body)
 end
