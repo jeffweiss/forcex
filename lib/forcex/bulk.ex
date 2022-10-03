@@ -139,7 +139,7 @@ defmodule Forcex.Bulk do
     Enum.find_value(
       headers,
       fn {name, value} ->
-        name =~ ~r/#{header_name}/i && String.downcase(value)
+        String.downcase(name) == String.downcase(header_name) && String.downcase(value)
       end
     )
   end
