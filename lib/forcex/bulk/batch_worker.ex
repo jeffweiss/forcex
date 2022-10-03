@@ -15,7 +15,7 @@ defmodule Forcex.Bulk.BatchWorker do
     client = Keyword.fetch!(state, :client)
     job = Keyword.fetch!(state, :job)
     query = Keyword.fetch!(state, :query)
-    handlers = Keyword.fetch!(state,:handlers)
+    handlers = Keyword.fetch!(state, :handlers)
     interval = Keyword.get(state, :status_interval, 10000)
 
     batch = Forcex.Bulk.create_query_batch(query, job, client)
@@ -39,12 +39,14 @@ defmodule Forcex.Bulk.BatchWorker do
     seen_results = Keyword.get(state, :results, [])
 
     results = Forcex.Bulk.fetch_batch_result_status(batch, client)
-    case (results -- seen_results) do
+
+    case results -- seen_results do
       list when is_list(list) ->
         for result <- list do
           notify_handlers({:batch_partial_result_ready, batch, result}, handlers)
         end
-      # _ -> true
+
+        # _ -> true
     end
 
     Keyword.put(state, :results, results)
@@ -71,5 +73,4 @@ defmodule Forcex.Bulk.BatchWorker do
       _ -> {:noreply, state}
     end
   end
-
 end

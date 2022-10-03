@@ -37,6 +37,7 @@ defmodule Forcex.Auth.SessionId do
     url = starting_struct.endpoint <> "/services/Soap/u/#{starting_struct.api_version}"
 
     Logger.debug("api=#{api_client()}")
+
     api_client().raw_request(:post, url, body, headers, [])
     |> handle_login_response
   end
