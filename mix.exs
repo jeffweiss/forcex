@@ -66,6 +66,7 @@ defmodule Forcex.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
       {:httpoison, "~> 1.0"},
       {:exjsx, "< 5.0.0"},
@@ -97,8 +98,8 @@ defmodule Forcex.Mixfile do
         "compile --warnings-as-errors",
         "format --check-formatted",
         "deps.unlock --check-unused",
-        "test --warnings-as-errors"
-        # "credo"
+        "test --warnings-as-errors",
+        "credo"
       ]
     ]
   end

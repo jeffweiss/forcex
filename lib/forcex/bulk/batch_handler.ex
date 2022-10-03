@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk.BatchHandler do
+  @moduledoc """
+  Functions for handling bulk batch state changes.
+  """
+
   @callback handle_batch_status(map, any) :: {:noreply, any}
   @callback handle_batch_created(map, any) :: {:noreply, any}
   @callback handle_batch_completed(map, any) :: {:noreply, any}

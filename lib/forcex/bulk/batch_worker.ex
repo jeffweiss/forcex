@@ -1,4 +1,8 @@
 defmodule Forcex.Bulk.BatchWorker do
+  @moduledoc """
+  GenServer process for managing batches of bulk jobs.
+  """
+
   use GenServer
   import Forcex.Bulk.Util
 
@@ -16,7 +20,7 @@ defmodule Forcex.Bulk.BatchWorker do
     job = Keyword.fetch!(state, :job)
     query = Keyword.fetch!(state, :query)
     handlers = Keyword.fetch!(state, :handlers)
-    interval = Keyword.get(state, :status_interval, 10000)
+    interval = Keyword.get(state, :status_interval, 10_000)
 
     batch = Forcex.Bulk.create_query_batch(query, job, client)
     notify_handlers({:batch_created, batch}, handlers)
