@@ -60,7 +60,7 @@ defmodule Forcex.Bulk do
       "application/json" <> suffix ->
         %{
           resp
-          | body: Poison.decode!(body, keys: :atoms),
+          | body: Jason.decode!(body, keys: :atoms),
             headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})
         }
 
