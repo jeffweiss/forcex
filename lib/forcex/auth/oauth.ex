@@ -14,7 +14,7 @@ defmodule Forcex.Auth.OAuth do
 
     "/services/oauth2/token?#{URI.encode_query(login_payload)}"
     |> Forcex.post(starting_struct)
-    |> handle_login_response
+    |> handle_login_response()
     |> maybe_add_api_version(starting_struct)
   end
 

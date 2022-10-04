@@ -60,7 +60,7 @@ defmodule Forcex.Bulk do
       "application/json" <> suffix ->
         %{
           resp
-          | body: Poison.decode!(body, keys: :atoms),
+          | body: Jason.decode!(body, keys: :atoms),
             headers: List.delete(headers, {"Content-Type", "application/json" <> suffix})
         }
 
@@ -87,7 +87,7 @@ defmodule Forcex.Bulk do
   end
 
   def json_request(method, url, body, headers, options) do
-    raw_request(method, url, JSX.encode!(body), headers, options)
+    raw_request(method, url, Jason.encode!(body), headers, options)
   end
 
   def raw_request(method, url, body, headers, options) do
