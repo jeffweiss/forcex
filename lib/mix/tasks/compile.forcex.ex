@@ -218,6 +218,20 @@ defmodule Mix.Tasks.Compile.Forcex do
           (unquote(sobject_url) <> "/#{field}/#{value}")
           |> Forcex.get(client)
         end
+
+        @doc """
+        Upsert (create or update) a `#{unquote(name)}` based on external field `field`
+
+        Parameters
+        * `sobject` - map of key/value pairs
+        * `field` - name of external field
+        * `value` - value of `field` for desired records
+        See [SObject Rows by External ID](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_upsert_patch.htm)
+        """
+        def upsert_by_external(sobject, client, field, value) when is_map(sobject) do
+          (unquote(sobject_url) <> "/#{field}/#{value}")
+          |> Forcex.post(sobject, client)
+        end
       end
 
       IO.puts("Generated #{unquote(Module.concat(Forcex.SObject, name))}")
