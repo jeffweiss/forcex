@@ -228,7 +228,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         * `value` - value of `field` for desired records
         See [SObject Rows by External ID](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_upsert_patch.htm)
         """
-        def upsert_by_external(sobject, client, field, value) when is_map(sobject) do
+        def upsert_by_external(sobject, field, value, client) when is_map(sobject) do
           (unquote(sobject_url) <> "/#{field}/#{value}")
           |> Forcex.post(sobject, client)
         end
