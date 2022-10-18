@@ -230,7 +230,7 @@ defmodule Mix.Tasks.Compile.Forcex do
         """
         def upsert_by_external(sobject, field, value, client) when is_map(sobject) do
           (unquote(sobject_url) <> "/#{field}/#{value}")
-          |> Forcex.post(sobject, client)
+          |> Forcex.patch(sobject, client)
         end
       end
 
