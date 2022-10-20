@@ -3,7 +3,7 @@ defmodule Forcex.Client do
 
   @default_endpoint "https://login.salesforce.com"
 
-  defstruct api_version: "43.0",
+  defstruct api_version: "56.0",
             authorization_header: [],
             endpoint: @default_endpoint,
             services: %{}

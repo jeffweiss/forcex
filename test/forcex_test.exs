@@ -5,16 +5,18 @@ defmodule ForcexTest do
   setup :verify_on_exit!
 
   test "query" do
+    api_version = "56.0"
+
     response = %{
       done: false,
-      nextRecordsUrl: "/services/data/v43.0/query/01g0W00006pQQsWQAW-2000",
+      nextRecordsUrl: "/services/data/v#{api_version}/query/01g0W00006pQQsWQAW-2000",
       records: [
         %{
           Id: "0010W00002JBygyQAD",
           Name: "Michael Weber",
           attributes: %{
             type: "Account",
-            url: "/services/data/v43.0/sobjects/Account/0010W00002JBygyQAD"
+            url: "/services/data/v#{api_version}/sobjects/Account/0010W00002JBygyQAD"
           }
         },
         %{
@@ -22,7 +24,7 @@ defmodule ForcexTest do
           Name: "Erica Adams",
           attributes: %{
             type: "Account",
-            url: "/services/data/v43.0/sobjects/Account/0010W00002JBw2mQAD"
+            url: "/services/data/v#{api_version}/sobjects/Account/0010W00002JBw2mQAD"
           }
         }
       ],
@@ -30,9 +32,8 @@ defmodule ForcexTest do
     }
 
     endpoint = "https://forcex.my.salesforce.com"
-    api_version = "43.0"
     auth_header = [{"Authorization", "Bearer sometoken"}]
-    query_path = "/services/data/v43.0/query"
+    query_path = "/services/data/v#{api_version}/query"
     query = "select Id, Name from Account order by CreatedDate desc"
     query_url = "#{endpoint}#{query_path}/?#{%{"q" => query} |> URI.encode_query()}"
 

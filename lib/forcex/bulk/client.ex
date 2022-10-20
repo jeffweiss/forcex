@@ -4,7 +4,7 @@ defmodule Forcex.Bulk.Client do
   """
 
   defstruct session_id: nil,
-            api_version: "43.0",
+            api_version: "56.0",
             endpoint: "https://login.salesforce.com",
             host: nil
 

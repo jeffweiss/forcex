@@ -6,7 +6,7 @@ defmodule Forcex.ClientTest do
 
   describe "session_id based login" do
     @session_id "forcex_session_id"
-    @server_url "https://forcex.my.salesforce.com/services/Soap/u/43.0/00Dd0000000cQ8L"
+    @server_url "https://forcex.my.salesforce.com/services/Soap/u/56.0/00Dd0000000cQ8L"
     @org_id "org_id"
     @response """
       <?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns=\"urn:partner.soap.sforce.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><soapenv:Body><loginResponse><result><metadataServerUrl>#{@server_url}</metadataServerUrl><passwordExpired>false</passwordExpired><sandbox>false</sandbox><serverUrl>#{@server_url}</serverUrl><sessionId>#{@session_id}</sessionId><userId>005d0000001Jb9tAAC</userId><userInfo><accessibilityMode>false</accessibilityMode><chatterExternal>false</chatterExternal><currencySymbol>$</currencySymbol><orgAttachmentFileSizeLimit>5242880</orgAttachmentFileSizeLimit><orgDefaultCurrencyIsoCode>USD</orgDefaultCurrencyIsoCode><orgDefaultCurrencyLocale>en_US</orgDefaultCurrencyLocale><orgDisallowHtmlAttachments>false</orgDisallowHtmlAttachments><orgHasPersonAccounts>true</orgHasPersonAccounts><organizationId>#{@org_id}</organizationId><organizationMultiCurrency>false</organizationMultiCurrency><organizationName>MY-ORG</organizationName><profileId>00ed0000000Ods2AAC</profileId><roleId>00Ed0000000II8UEAW</roleId><sessionSecondsValid>7200</sessionSecondsValid><userDefaultCurrencyIsoCode xsi:nil=\"true\"/><userEmail>forcex@example.com</userEmail><userFullName>John Doe</userFullName><userId>005d0000001Jb9tAAC</userId><userLanguage>en_US</userLanguage><userLocale>en_US</userLocale><userName>forcex@example.com</userName><userTimeZone>America/New_York</userTimeZone><userType>Standard</userType><userUiSkin>Theme3</userUiSkin></userInfo></result></loginResponse></soapenv:Body></soapenv:Envelope>
@@ -119,7 +119,7 @@ defmodule Forcex.ClientTest do
                }
              ]
 
-      assert client.api_version == "43.0"
+      assert client.api_version == "56.0"
     end
 
     test "allows overriding the api_version as specified in the starting_struct", %{
@@ -212,13 +212,14 @@ defmodule Forcex.ClientTest do
 
   describe "locate_services" do
     test "when successful sets servies on the client" do
+      api_version = "56.0"
+
       response = %{
-        jobs: "/services/data/v43.0/jobs",
-        query: "/services/data/v43.0/query"
+        jobs: "/services/data/v#{api_version}/jobs",
+        query: "/services/data/v#{api_version}/query"
       }
 
       endpoint = "https://forcex.my.salesforce.com"
-      api_version = "43.0"
       auth_header = [{"Authorization", "Bearer sometoken"}]
       services_url = endpoint <> "/services/data/v" <> api_version
 
