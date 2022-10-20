@@ -124,6 +124,18 @@ Forcex.Client.default_config
 |> Forcex.Client.login(%Forcex.Client{endpoint: "https://test.salesforce.com", api_version: "34.0"})
 ```
 
+## SObject filtering
+
+If you only need to work with a subset of the SObjects to which you have access,
+you can save compile time by specifying only the SObjects that you want to be
+compiled:
+
+```elixir
+config :forcex, Forcex.Client,
+...
+  sobjects: ~w(Account User)
+```
+
 ## Testing
 
 Make sure dependencies are installed
